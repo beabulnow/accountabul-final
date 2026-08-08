@@ -31,7 +31,7 @@ function BusinessesPage() {
     queryKey: ["directory", term],
     queryFn: async () => {
       let query = supabase
-        .from("businesses")
+        .from("public_businesses")
         .select(
           "id, slug, display_name, headline, primary_industry, address_city, address_state, verification_status",
         )

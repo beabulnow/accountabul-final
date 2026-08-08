@@ -118,7 +118,7 @@ unique indexes on all slugs; `chat_messages (event_id, created_at)`;
 `tips (provider, provider_record_id)` unique; `payment_events (provider, provider_event_id)`
 unique. Verify with `EXPLAIN (ANALYZE, BUFFERS)` on representative data before launch.
 
-## Migration skeleton (order, not yet executed)
+## Logical migration order
 
 1. `0001_extensions_and_enums`
 2. `0002_profiles_and_user_roles` (+ `has_role` security-definer function)
@@ -133,4 +133,8 @@ unique. Verify with `EXPLAIN (ANALYZE, BUFFERS)` on representative data before l
 11. `0011_migration_mapping_tables`
 
 Each migration is forward-only, contains its GRANTs and RLS policies inline, and is
-committed to source control.
+committed to source control. The logical groups were consolidated into timestamped
+Supabase migration files during implementation. Because the current CLI profile cannot
+read the linked project (HTTP 403), the live applied list must be verified by an authorized
+operator before any further remote change; repository presence alone is not execution
+evidence.

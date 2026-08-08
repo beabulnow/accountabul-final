@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePlayerUiState } from "@/lib/chat-gateway";
+import { sendChatMessage } from "@/lib/chat.functions";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { createTipIntent } from "@/lib/tips.functions";
 
@@ -97,6 +99,30 @@ function LiveRoomPage() {
 
   if (event.isLoading) return <PageShell title="Loading room" description="Fetching this event." />;
 
+  if (event.isError) {
+    return (
+      <PageShell
+        eyebrow="Conference room"
+        title="The room is temporarily unavailable"
+        description="We could not retrieve the room. Your link is still valid."
+      >
+        <div className="surface-card max-w-xl p-6" role="alert">
+          <p className="text-sm text-muted-foreground">
+            Check your connection, then retry. If the problem continues, return to the event list.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button type="button" onClick={() => void event.refetch()}>
+              Try again
+            </Button>
+            <Button asChild type="button" variant="outline">
+              <Link to="/live">Back to live events</Link>
+            </Button>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
   if (!e) {
     return (
       <PageShell
@@ -126,30 +152,12 @@ function LiveRoomPage() {
     >
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-4">
-          <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-secondary">
-            {playable ? (
-              <iframe
-                src={playable}
-                title={e.title}
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowFullScreen
-                className="size-full"
-              />
-            ) : (
-              <div className="flex size-full flex-col items-center justify-center gap-2 p-6 text-center">
-                <p className="font-medium">
-                  {e.status === "scheduled"
-                    ? "This room has not started yet"
-                    : "The stream has ended"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {e.status === "scheduled"
-                    ? "Set a reminder and the room will open here when it goes live."
-                    : "A replay appears here when the recording is published."}
-                </p>
-              </div>
-            )}
-          </div>
+          <PlayerSurface
+            eventStatus={e.status}
+            playableUrl={playable}
+            title={e.title}
+            onRetry={() => void event.refetch()}
+          />
 
           <section className="surface-card p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -192,12 +200,133 @@ function LiveRoomPage() {
   );
 }
 
+function PlayerSurface({
+  eventStatus,
+  playableUrl,
+  title,
+  onRetry,
+}: {
+  eventStatus: string;
+  playableUrl: string | null;
+  title: string;
+  onRetry: () => void;
+}) {
+  const [online, setOnline] = useState(true);
+  const [frameStatus, setFrameStatus] = useState<"connecting" | "ready" | "failed">("connecting");
+  const [frameKey, setFrameKey] = useState(0);
+  const frameTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setOnline(navigator.onLine);
+    const handleOffline = () => setOnline(false);
+    const handleOnline = () => {
+      setOnline(true);
+      setFrameStatus("connecting");
+      setFrameKey((value) => value + 1);
+    };
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
+
+  useEffect(() => {
+    setFrameStatus("connecting");
+    if (!playableUrl || eventStatus === "scheduled" || eventStatus === "ended") return;
+    frameTimeoutRef.current = window.setTimeout(() => setFrameStatus("failed"), 15_000);
+    return () => {
+      if (frameTimeoutRef.current !== null) window.clearTimeout(frameTimeoutRef.current);
+      frameTimeoutRef.current = null;
+    };
+  }, [eventStatus, playableUrl, frameKey]);
+
+  const state = resolvePlayerUiState({ eventStatus, playableUrl, online, frameStatus });
+  const retry = () => {
+    setFrameStatus("connecting");
+    setFrameKey((value) => value + 1);
+    onRetry();
+  };
+
+  return (
+    <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-secondary">
+      {(state === "connecting" || state === "live") && playableUrl ? (
+        <div className="relative size-full">
+          <iframe
+            key={frameKey}
+            src={playableUrl}
+            title={title}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            onLoad={() => {
+              if (frameTimeoutRef.current !== null) window.clearTimeout(frameTimeoutRef.current);
+              frameTimeoutRef.current = null;
+              setFrameStatus("ready");
+            }}
+            onError={() => {
+              if (frameTimeoutRef.current !== null) window.clearTimeout(frameTimeoutRef.current);
+              frameTimeoutRef.current = null;
+              setFrameStatus("failed");
+            }}
+            className="size-full"
+          />
+          {state === "connecting" ? (
+            <div
+              className="absolute inset-x-0 bottom-0 bg-background/90 px-4 py-2 text-center text-sm"
+              role="status"
+              aria-live="polite"
+            >
+              Connecting to the stream…
+            </div>
+          ) : (
+            <span className="sr-only" role="status" aria-live="polite">
+              Stream connected.
+            </span>
+          )}
+        </div>
+      ) : (
+        <div
+          className="flex size-full flex-col items-center justify-center gap-2 p-6 text-center"
+          role={state === "provider-down" ? "alert" : "status"}
+          aria-live="polite"
+        >
+          <p className="font-medium">
+            {state === "scheduled"
+              ? "This room has not started yet"
+              : state === "reconnecting"
+                ? "Connection lost — reconnecting"
+                : state === "provider-down"
+                  ? "The video provider is unavailable"
+                  : "The stream has ended"}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {state === "scheduled"
+              ? "Set a reminder and the room will open here when it goes live."
+              : state === "reconnecting"
+                ? "We will retry when your internet connection returns."
+                : state === "provider-down"
+                  ? "Chat and room details are still available. Try the player again in a moment."
+                  : "A replay appears here when the recording is published."}
+          </p>
+          {state === "provider-down" ? (
+            <Button type="button" size="sm" variant="outline" onClick={retry}>
+              Retry player
+            </Button>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ChatPanel({ eventId }: { eventId: string }) {
   const { session } = useSession();
   const userId = session?.user.id;
   const queryClient = useQueryClient();
   const [body, setBody] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
+  const sendMessage = useServerFn(sendChatMessage);
 
   const messages = useQuery({
     queryKey: ["chat", eventId],
@@ -222,19 +351,8 @@ function ChatPanel({ eventId }: { eventId: string }) {
 
   const send = useMutation({
     mutationFn: async () => {
-      const text = body.trim();
       if (!userId) throw new Error("Sign in to join the chat.");
-      if (!text) throw new Error("Write a message first.");
-      if (text.length > 500) throw new Error("Messages are limited to 500 characters.");
-      const { error } = await supabase
-        .from("chat_messages")
-        .insert({ event_id: eventId, user_id: userId, body: text });
-      if (error)
-        throw new Error(
-          error.message.includes("row-level security")
-            ? "You cannot post in this room."
-            : error.message,
-        );
+      return sendMessage({ data: { eventId, body } });
     },
     onSuccess: () => {
       setBody("");
@@ -260,6 +378,25 @@ function ChatPanel({ eventId }: { eventId: string }) {
         {userId && messages.data?.length === 0 ? (
           <p className="text-sm text-muted-foreground">No messages yet. Say hello.</p>
         ) : null}
+        {userId && messages.isLoading ? (
+          <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+            Loading chat…
+          </p>
+        ) : null}
+        {userId && messages.isError ? (
+          <div className="rounded-md border border-destructive/40 p-3 text-sm" role="alert">
+            <p>Chat could not be loaded.</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              onClick={() => void messages.refetch()}
+            >
+              Retry chat
+            </Button>
+          </div>
+        ) : null}
         {messages.data?.map((m) => (
           <div key={m.id} className="rounded-md bg-secondary/60 px-3 py-2 text-sm">
             <p className="text-xs text-muted-foreground">
@@ -273,6 +410,7 @@ function ChatPanel({ eventId }: { eventId: string }) {
       </div>
       <form
         className="mt-4 flex gap-2"
+        aria-busy={send.isPending}
         onSubmit={(e) => {
           e.preventDefault();
           send.mutate();
@@ -285,11 +423,18 @@ function ChatPanel({ eventId }: { eventId: string }) {
           maxLength={500}
           disabled={!userId}
           aria-label="Chat message"
+          aria-invalid={send.isError}
+          aria-describedby={send.isError ? "chat-send-error" : undefined}
         />
         <Button type="submit" disabled={!userId || send.isPending}>
           Send
         </Button>
       </form>
+      {send.isError ? (
+        <p id="chat-send-error" className="mt-2 text-xs text-destructive" role="alert">
+          {send.error.message}
+        </p>
+      ) : null}
     </aside>
   );
 }

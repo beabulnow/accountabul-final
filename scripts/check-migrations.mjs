@@ -18,7 +18,7 @@ for (const file of files) {
     ...normalized.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-z0-9_]+)/g),
   ].map((match) => match[1]);
 
-  if (!/^\d{14}_[a-z0-9-]+\.sql$/i.test(file)) {
+  if (!/^\d{14}_[a-z0-9_-]+\.sql$/i.test(file)) {
     failures.push(`${file}: migration filename must start with a 14-digit UTC timestamp.`);
   }
 

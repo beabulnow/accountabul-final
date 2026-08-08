@@ -54,19 +54,10 @@ function AdminPage() {
 
   const decide = useMutation({
     mutationFn: async ({ id, approve }: { id: string; approve: boolean }) => {
-      const { error } = await supabase
-        .from("businesses")
-        .update(
-          approve
-            ? {
-                profile_status: "published" as const,
-                verification_status: "verified" as const,
-                public_profile_enabled: true,
-                published_at: new Date().toISOString(),
-              }
-            : { profile_status: "rejected" as const, verification_status: "rejected" as const },
-        )
-        .eq("id", id);
+      const { error } = await supabase.rpc("review_business", {
+        _business_id: id,
+        _decision: approve ? "approve" : "reject",
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -123,7 +114,7 @@ function AdminPage() {
                 /{b.slug} · {b.profile_status} · {b.verification_status}
               </p>
             </div>
-            {isAdmin ? (
+            {isModerator ? (
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -141,9 +132,7 @@ function AdminPage() {
                   Reject
                 </Button>
               </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">Read-only</span>
-            )}
+            ) : null}
           </div>
         ))}
         {queue.data && queue.data.length === 0 ? (
@@ -151,7 +140,9 @@ function AdminPage() {
         ) : null}
       </div>
 
-      <ListingQueue isAdmin={isAdmin} />
+      <CredentialQueue canReview={isModerator} />
+      <ListingQueue canReview={isModerator} />
+      <ServiceQueue canReview={isModerator} />
       <EventsAdmin isAdmin={isAdmin} />
       <TipsReconciliation isAdmin={isAdmin} />
       <OperationsLog isAdmin={isAdmin} />
@@ -177,7 +168,7 @@ function SectionCard({
   );
 }
 
-function ListingQueue({ isAdmin }: { isAdmin: boolean }) {
+function ListingQueue({ canReview }: { canReview: boolean }) {
   const queryClient = useQueryClient();
 
   const listings = useQuery({
@@ -196,14 +187,10 @@ function ListingQueue({ isAdmin }: { isAdmin: boolean }) {
 
   const decide = useMutation({
     mutationFn: async ({ id, approve }: { id: string; approve: boolean }) => {
-      const { error } = await supabase
-        .from("properties")
-        .update(
-          approve
-            ? { status: "published" as const, published_at: new Date().toISOString() }
-            : { status: "rejected" as const },
-        )
-        .eq("id", id);
+      const { error } = await supabase.rpc("review_property", {
+        _property_id: id,
+        _decision: approve ? "approve" : "reject",
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -234,7 +221,7 @@ function ListingQueue({ isAdmin }: { isAdmin: boolean }) {
                 {p.status}
               </p>
             </div>
-            {isAdmin ? (
+            {canReview ? (
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -252,9 +239,165 @@ function ListingQueue({ isAdmin }: { isAdmin: boolean }) {
                   Reject
                 </Button>
               </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">Read-only</span>
-            )}
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </SectionCard>
+  );
+}
+
+function ServiceQueue({ canReview }: { canReview: boolean }) {
+  const queryClient = useQueryClient();
+  const services = useQuery({
+    queryKey: ["admin-services"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("id, name, category, status, businesses(display_name)")
+        .in("status", ["pending_review", "published"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const decide = useMutation({
+    mutationFn: async ({ id, approve }: { id: string; approve: boolean }) => {
+      const { error } = await supabase.rpc("review_service", {
+        _service_id: id,
+        _decision: approve ? "approve" : "reject",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Service decision recorded.");
+      void queryClient.invalidateQueries({ queryKey: ["admin-services"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-audit"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <SectionCard
+      title="Service review"
+      description="Business service drafts remain private until a reviewer publishes them."
+    >
+      <ul className="space-y-3">
+        {services.data?.length === 0 ? (
+          <li className="text-sm text-muted-foreground">Nothing waiting for review.</li>
+        ) : null}
+        {services.data?.map((service) => (
+          <li
+            key={service.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-4"
+          >
+            <div>
+              <p className="font-medium">{service.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {service.businesses?.display_name ?? "Unknown business"} ·{" "}
+                {service.category ?? "General"} · {service.status.replace("_", " ")}
+              </p>
+            </div>
+            {canReview ? (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ id: service.id, approve: true })}
+                >
+                  Publish
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ id: service.id, approve: false })}
+                >
+                  Reject
+                </Button>
+              </div>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </SectionCard>
+  );
+}
+
+function CredentialQueue({ canReview }: { canReview: boolean }) {
+  const queryClient = useQueryClient();
+  const credentials = useQuery({
+    queryKey: ["admin-credentials"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("business_credentials")
+        .select(
+          "id, credential_type, issuing_authority, identifier, review_status, public_display_approved, businesses(display_name)",
+        )
+        .in("review_status", ["pending", "approved"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const decide = useMutation({
+    mutationFn: async ({ id, approve }: { id: string; approve: boolean }) => {
+      const { error } = await supabase.rpc("review_business_credential", {
+        _credential_id: id,
+        _decision: approve ? "approve" : "reject",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Credential decision recorded.");
+      void queryClient.invalidateQueries({ queryKey: ["admin-credentials"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-audit"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <SectionCard
+      title="Credential review"
+      description="Only approved credentials explicitly marked for public display reach public profiles."
+    >
+      <ul className="space-y-3">
+        {credentials.data?.length === 0 ? (
+          <li className="text-sm text-muted-foreground">Nothing waiting for review.</li>
+        ) : null}
+        {credentials.data?.map((credential) => (
+          <li
+            key={credential.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-4"
+          >
+            <div>
+              <p className="font-medium">{credential.credential_type}</p>
+              <p className="text-xs text-muted-foreground">
+                {credential.businesses?.display_name ?? "Unknown business"} ·{" "}
+                {credential.issuing_authority ?? "No issuer"} · {credential.review_status}
+              </p>
+            </div>
+            {canReview ? (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ id: credential.id, approve: true })}
+                >
+                  Approve for display
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ id: credential.id, approve: false })}
+                >
+                  Reject
+                </Button>
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>

@@ -1,0 +1,248 @@
+{
+  "scope": "credential-free static route, accessibility, live-state, and chat-boundary checks",
+  "routeCount": 18,
+  "passed": 48,
+  "failed": 0,
+  "results": [
+    {
+      "name": "route:src/routes/index.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/signup.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/login.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/live.index.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/live.$slug.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/marketplace.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/properties.$slug.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/businesses.index.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/businesses.$slug.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/saved.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.index.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.profile.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.business.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.properties.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.services.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.leads.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/dashboard.billing.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "route:src/routes/admin.tsx",
+      "pass": true,
+      "detail": "route file exists"
+    },
+    {
+      "name": "metadata:src/routes/index.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/signup.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/login.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/live.index.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/live.$slug.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/marketplace.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/properties.$slug.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/businesses.index.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/businesses.$slug.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/saved.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.index.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.profile.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.business.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.properties.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.services.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.leads.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/dashboard.billing.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "metadata:src/routes/admin.tsx",
+      "pass": true,
+      "detail": "title, description, and Open Graph title present"
+    },
+    {
+      "name": "a11y:language",
+      "pass": true,
+      "detail": "document language declared"
+    },
+    {
+      "name": "a11y:skip-link",
+      "pass": true,
+      "detail": "keyboard bypass link targets the main landmark"
+    },
+    {
+      "name": "a11y:image-alt",
+      "pass": true,
+      "detail": "1 image tag(s) inspected"
+    },
+    {
+      "name": "a11y:button-type",
+      "pass": true,
+      "detail": "6 raw button tag(s) inspected"
+    },
+    {
+      "name": "a11y:iframe-title",
+      "pass": true,
+      "detail": "embedded player has an accessible title"
+    },
+    {
+      "name": "live-state:Connecting to the stream",
+      "pass": true,
+      "detail": "explicit Connecting to the stream UI"
+    },
+    {
+      "name": "live-state:Connection lost — reconnecting",
+      "pass": true,
+      "detail": "explicit Connection lost — reconnecting UI"
+    },
+    {
+      "name": "live-state:The video provider is unavailable",
+      "pass": true,
+      "detail": "explicit The video provider is unavailable UI"
+    },
+    {
+      "name": "live-state:The stream has ended",
+      "pass": true,
+      "detail": "explicit The stream has ended UI"
+    },
+    {
+      "name": "live-state:Retry chat",
+      "pass": true,
+      "detail": "explicit Retry chat UI"
+    },
+    {
+      "name": "chat:server-only",
+      "pass": true,
+      "detail": "route sends through authenticated server function and contains no direct insert"
+    },
+    {
+      "name": "chat:database-guard",
+      "pass": true,
+      "detail": "moderation, atomic rate limit, and RPC grants inspected"
+    }
+  ]
+}

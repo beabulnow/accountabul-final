@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-08-08T11:54:58.593Z",
+  "mode": "dry-run",
+  "sourceSystem": "fixture-crm",
+  "counts": {
+    "input": 2,
+    "accepted": 2,
+    "skipped": 0,
+    "unresolvedIdentities": 1,
+    "assetIssues": 1,
+    "priceTotalMinor": 2000
+  },
+  "expectedPriceTotalMinor": 2500,
+  "moneyReconciles": false,
+  "accepted": [
+    {
+      "legacyId": "property-unresolved",
+      "targetTable": "properties",
+      "targetId": "05f56a50-679e-59af-ae0e-5209aaad6bfc",
+      "data": {
+        "business_id": "00000000-0000-4000-8000-000000000001",
+        "slug": "fixture-unresolved",
+        "title": "Needs identity review",
+        "price_minor": 1000,
+        "status": "draft",
+        "published_at": null
+      }
+    },
+    {
+      "legacyId": "service-corrupt-asset",
+      "targetTable": "services",
+      "targetId": "2ba908a0-d14e-5c9c-9481-7edfe031d6b7",
+      "data": {
+        "business_id": "00000000-0000-4000-8000-000000000001",
+        "slug": "fixture-corrupt",
+        "name": "Needs asset review",
+        "price_minor": 1000,
+        "status": "draft",
+        "published_at": null
+      }
+    }
+  ],
+  "skipped": [],
+  "unresolvedIdentities": [
+    {
+      "legacyId": "property-unresolved",
+      "targetTable": "properties",
+      "identity": "missing-owner@example.com"
+    }
+  ],
+  "assetIssues": [
+    {
+      "legacyId": "service-corrupt-asset",
+      "targetTable": "services",
+      "path": "missing.jpg",
+      "reason": "asset requires path and sha256"
+    }
+  ]
+}

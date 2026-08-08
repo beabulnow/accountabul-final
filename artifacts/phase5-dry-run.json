@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-08-08T11:54:39.917Z",
+  "mode": "dry-run",
+  "sourceSystem": "fixture-crm",
+  "counts": {
+    "input": 2,
+    "accepted": 2,
+    "skipped": 0,
+    "unresolvedIdentities": 0,
+    "assetIssues": 0,
+    "priceTotalMinor": 0
+  },
+  "expectedPriceTotalMinor": null,
+  "moneyReconciles": true,
+  "accepted": [
+    {
+      "legacyId": "business-100",
+      "targetTable": "businesses",
+      "targetId": "078a5385-103b-5d52-b6c1-9533a49a100a",
+      "data": {
+        "slug": "fixture-business",
+        "legal_name": "Fixture Business LLC",
+        "display_name": "Fixture Business",
+        "profile_status": "draft",
+        "verification_status": "unverified",
+        "public_profile_enabled": false,
+        "published_at": null
+      }
+    },
+    {
+      "legacyId": "service-200",
+      "targetTable": "services",
+      "targetId": "5f10ba47-220b-5336-8bf7-99c3ca9491ec",
+      "data": {
+        "business_id": "00000000-0000-4000-8000-000000000001",
+        "slug": "fixture-service",
+        "name": "Fixture Service",
+        "status": "draft",
+        "published_at": null
+      }
+    }
+  ],
+  "skipped": [],
+  "unresolvedIdentities": [],
+  "assetIssues": []
+}

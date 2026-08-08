@@ -1070,7 +1070,43 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      public_business_credentials: {
+        Row: {
+          business_id: string;
+          credential_type: string;
+          expires_at: string | null;
+          identifier: string | null;
+          issued_at: string | null;
+          issuing_authority: string | null;
+        };
+        Relationships: [];
+      };
+      public_businesses: {
+        Row: {
+          address_city: string | null;
+          address_country: string | null;
+          address_state: string | null;
+          cover_path: string | null;
+          description: string | null;
+          display_name: string;
+          employee_count_range: string | null;
+          headline: string | null;
+          id: string;
+          logo_path: string | null;
+          primary_industry: string | null;
+          profile_status: Database["public"]["Enums"]["profile_status"];
+          public_email: string | null;
+          public_phone: string | null;
+          public_profile_enabled: boolean;
+          published_at: string | null;
+          service_areas: string[];
+          slug: string;
+          verification_status: Database["public"]["Enums"]["verification_status"];
+          website_url: string | null;
+          year_founded: number | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       can_manage_business: {
@@ -1095,6 +1131,43 @@ export type Database = {
       is_chat_banned: {
         Args: { _event_id: string; _user_id: string };
         Returns: boolean;
+      };
+      create_business_with_owner: {
+        Args: {
+          _address_city?: string | null;
+          _address_country?: string | null;
+          _address_state?: string | null;
+          _description?: string | null;
+          _display_name: string;
+          _headline?: string | null;
+          _legal_name: string;
+          _primary_industry?: string | null;
+          _public_email?: string | null;
+          _public_phone?: string | null;
+          _slug: string;
+          _website_url?: string | null;
+        };
+        Returns: string;
+      };
+      review_business: {
+        Args: { _business_id: string; _decision: string };
+        Returns: undefined;
+      };
+      review_business_credential: {
+        Args: { _credential_id: string; _decision: string };
+        Returns: undefined;
+      };
+      review_property: {
+        Args: { _decision: string; _property_id: string };
+        Returns: undefined;
+      };
+      review_service: {
+        Args: { _decision: string; _service_id: string };
+        Returns: undefined;
+      };
+      send_chat_message: {
+        Args: { _body: string; _event_id: string };
+        Returns: Database["public"]["Tables"]["chat_messages"]["Row"];
       };
     };
     Enums: {

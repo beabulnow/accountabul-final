@@ -99,11 +99,11 @@ function ServicesDashboard() {
       status,
     }: {
       id: string;
-      status: "draft" | "published" | "archived";
+      status: "draft" | "pending_review" | "archived";
     }) => {
       const { error } = await supabase
         .from("services")
-        .update({ status, published_at: status === "published" ? new Date().toISOString() : null })
+        .update({ status, published_at: null })
         .eq("id", id);
       if (error) throw error;
     },
@@ -223,23 +223,23 @@ function ServicesDashboard() {
                 </p>
               </div>
               <div className="flex gap-2">
-                {s.status !== "published" ? (
+                {s.status === "draft" || s.status === "rejected" ? (
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => setStatus.mutate({ id: s.id, status: "published" })}
+                    onClick={() => setStatus.mutate({ id: s.id, status: "pending_review" })}
                   >
-                    Publish
+                    Submit for review
                   </Button>
-                ) : (
+                ) : s.status === "archived" ? (
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => setStatus.mutate({ id: s.id, status: "draft" })}
                   >
-                    Unpublish
+                    Restore draft
                   </Button>
-                )}
+                ) : null}
                 <Button
                   size="sm"
                   variant="ghost"

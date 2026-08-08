@@ -2,18 +2,30 @@
 
 Last reviewed: 2026-08-08
 
-This ledger records evidence, not the number of screens present. A phase remains in
-progress until its roadmap gate has passed end to end.
+This ledger records reproducible evidence. "Credential-free complete" means all safe work
+that does not need a connected provider has been implemented and verified; it does not mean
+the roadmap's connected gate has passed.
 
-| Phase                    | Status                   | Evidence                                                                                                              | Open gate                                                                                                                     |
-| ------------------------ | ------------------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Foundation           | Complete in this branch  | Architecture, route map, schema, threat model, migration policy, CI, migration checks, and secret scan are committed. | Merge the CI workflow and observe its first successful run.                                                                   |
-| 1 — Accounts/businesses  | Gate closure in progress | Auth, recovery, profiles, businesses, memberships, credentials, directory, detail, and admin review exist.            | Run `.github/workflows/phase-1-gate.yml` with the three Supabase secrets and record the live two-user RLS result.             |
-| 2 — Marketplace/services | Partial                  | Listings, services, saves, inquiries, and lead UI exist.                                                              | Storage upload/media workflow and lifecycle/storage end-to-end tests are missing.                                             |
-| 3 — Live/chat            | Partial                  | Event routes, player shell, reminders, presence, chat tables, and basic chat exist.                                   | Restream adapter, unified server gateway, rate limits, provider-down/reconnect states, and moderation gate tests are missing. |
-| 4 — Tips/payments        | Partial                  | Stripe checkout, signed webhook reconciliation, billing/admin surfaces, and focused webhook unit tests exist.         | Connected-provider idempotency/refund proof and tip-to-chat event are missing.                                                |
-| 5 — Migration/operations | Scaffold only            | Audit and migration mapping tables plus an admin shell exist.                                                         | Importers, dry run, reconciliation, and operational runbooks are missing.                                                     |
-| 6 — Launch QA            | Partial evidence         | All 18 unauthenticated routes passed an initial smoke review.                                                         | Authenticated, accessibility, cross-browser, load, security, monitoring, and alerting gates are missing.                      |
+| Phase | Credential-free status | Concrete evidence | Connected gate still required |
+| --- | --- | --- | --- |
+| 0 — Foundation | Complete in this branch | Architecture, route map, schema, threat model, additive migration policy, three phase workflows, migration checks, secret scan, Node 22 CI. | Merge and observe the repository workflows pass on GitHub. |
+| 1 — Accounts and businesses | Complete | Atomic business/owner creation, staff membership management, narrow public projections, credential submission/review, audited lifecycle RPCs, RLS and grant hardening. Unit/static gates pass. | Apply migrations and run the two-user/two-business live RLS workflow with Supabase credentials; record anonymous 403/private-field proof. |
+| 2 — Marketplace and services | Complete | Listing/service lifecycle, saves, business follows, inquiries, leads, private property media bucket, manager-only writes, signed reads, cleanup and missing-image fallback. Storage policy tests pass. | Apply migrations in a disposable project and run the member/owner/outsider/suspended-parent upload lifecycle gate. |
+| 3 — Live events and chat | Complete | Scheduled/connecting/live/reconnecting/ended/provider-down UI, server-only chat RPC, room/event validation, bans, moderator rules, atomic rate limiting, and direct-insert revocation. Chat tests and static boundary checks pass. | Apply migrations and run the live member/banned/burst/forged-user/moderator/anonymous chat gate; verify the configured streaming provider and replay URLs. |
+| 4 — Tips and payments | Complete | Strict server checkout inputs/return origin, signed webhook reconciliation, idempotent paid-tip chat event, failure/expiry/refund handling, audit trail, and focused webhook tests. | Configure Stripe test mode and save checkout, duplicate/reordered webhook, refresh, async failure, wrong amount/currency/session, and refund evidence. |
+| 5 — Migration and operations | Complete | Deterministic allowlisted importer, safe dry run, forced re-review, money/identity/asset validation, resumable mapping reconciliation, fixtures and reports, plus backup/restore/cutover/rollback/incident runbooks. | Supply the frozen legacy export and connected scratch project; rehearse database plus Storage restore, run final dry/apply reconciliation, and obtain operator sign-off. |
+| 6 — Launch QA | Credential-free complete | Aggregate check passes; static QA 48/48; HTTP route smoke 18/18; local load smoke 100 requests at concurrency 10 with zero failures; production build passes. Evidence is in `artifacts/`. | Run authenticated role and browser/accessibility matrices against a deployed preview, connected security/payment/storage/chat tests, representative load tests, and trigger monitoring/alerts. |
+
+## Latest local verification
+
+- `npm run check`: passed — 7 migrations inspected, static QA 48/48, typecheck and
+  lint with no errors, tests 25 passed/4 credential-dependent skipped, production build
+  succeeded.
+- `npm run qa:smoke -- http://127.0.0.1:3012`: 18/18 route shells passed.
+- `npm run qa:load -- http://127.0.0.1:3012`: 100 requests, concurrency 10, zero
+  failures. This is a smoke result, not a production capacity claim.
+- The skipped tests are intentionally connected gates and list the exact missing Supabase
+  variables in their output.
 
 ## Branch baseline
 
@@ -25,17 +37,11 @@ progress until its roadmap gate has passed end to end.
 - The already-merged `codex/initial-qa-fixes` branch is historical and should not receive
   new work.
 
-## Required Phase 1 credentials
+## Inputs needed to close the remaining gates
 
-Configure these as GitHub Actions repository secrets, then manually run **Phase 1 live
-RLS gate**:
-
-- `SUPABASE_URL`
-- `SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-The test creates two disposable confirmed users and two draft businesses, verifies
-cross-user isolation, and deletes its test data. The service-role key is server/CI-only
-and must never use a `VITE_` prefix. The connected Supabase management integration did
-not have permission to inspect this project during the 2026-08-08 audit, so the gate
-cannot be substituted with an MCP-side test.
+Use [ENVIRONMENT_HANDOFF.md](./ENVIRONMENT_HANDOFF.md) as the operator checklist. At
+minimum, an authorized operator must provide Supabase project access and server-only keys,
+Stripe test-mode secrets/dashboard access, the deployed preview origin, disposable role
+accounts or permission to create them, representative test records, the frozen legacy
+export, and access to hosting/provider logs and alerts. Never paste secrets into source,
+issues, screenshots, or chat.

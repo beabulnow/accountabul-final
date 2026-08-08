@@ -1,0 +1,28 @@
+{
+  "sourceSystem": "fixture-crm",
+  "expectedPriceTotalMinor": 2500,
+  "records": [
+    {
+      "legacyId": "property-unresolved",
+      "targetTable": "properties",
+      "data": {
+        "business_id": "00000000-0000-4000-8000-000000000001",
+        "slug": "fixture-unresolved",
+        "title": "Needs identity review",
+        "price_minor": 1000
+      },
+      "unresolvedIdentities": ["missing-owner@example.com"]
+    },
+    {
+      "legacyId": "service-corrupt-asset",
+      "targetTable": "services",
+      "data": {
+        "business_id": "00000000-0000-4000-8000-000000000001",
+        "slug": "fixture-corrupt",
+        "name": "Needs asset review",
+        "price_minor": 1000
+      },
+      "assets": [{ "path": "missing.jpg" }]
+    }
+  ]
+}

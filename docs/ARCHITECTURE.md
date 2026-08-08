@@ -35,9 +35,8 @@ schema and RLS threat model are reviewed.
 
 The browser may receive public content, the signed-in user's permitted rows, short-lived
 upload permissions, and safe public identifiers. It must never receive: service-role
-credentials, Restream secrets or private pull keys, Stripe secret or webhook secrets,
-wallet secrets or private keys, full EIN or identity documents, private verification
-notes, or raw provider webhook payloads.
+credentials, Restream secrets or private pull keys, Stripe secret or webhook secrets, full
+EIN or identity documents, private verification notes, or raw provider webhook payloads.
 
 All privileged provider calls occur inside `createServerFn().handler()` or a server route
 handler. Secrets are read from `process.env` **inside the handler only** — never at module
@@ -55,7 +54,7 @@ asserts a role.
 
 Restream, payments, and chat transport sit behind server-side adapters so provider
 specifics never reach page components. Payments are provider-neutral with Stripe as the
-first rail; XRPL/Xaman remains a later-phase adapter.
+only in-scope launch rail; any additional rail requires separately approved future scope.
 
 ## ADR-007 — Validation and contracts
 

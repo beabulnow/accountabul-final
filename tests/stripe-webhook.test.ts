@@ -3,6 +3,9 @@ import { createHmac } from "node:crypto";
 import test from "node:test";
 
 import {
+  buildStripeReturnUrls,
+  buildTipChatMessage,
+  isStripePaymentSuccessEvent,
   parseStripeEvent,
   planTipTransition,
   verifyStripeSignature,
@@ -65,6 +68,81 @@ test("never lets a late paid event overwrite a refunded tip", () => {
 test("waits for an async event when Checkout completes unpaid", () => {
   const event = buildCheckoutEvent({ payment_status: "unpaid" });
   assert.equal(planTipTransition(event, buildTip()), null);
+});
+
+test("maps asynchronous failure and expiration without overwriting paid tips", () => {
+  const failed: StripeEvent = {
+    ...buildCheckoutEvent(),
+    type: "checkout.session.async_payment_failed",
+  };
+  assert.deepEqual(planTipTransition(failed, buildTip()), {
+    status: "failed",
+    allowedCurrentStatuses: ["created", "processing"],
+  });
+  assert.equal(planTipTransition(failed, buildTip({ status: "paid" })), null);
+
+  const expired: StripeEvent = { ...buildCheckoutEvent(), type: "checkout.session.expired" };
+  assert.deepEqual(planTipTransition(expired, buildTip({ status: "created" })), {
+    status: "failed",
+    allowedCurrentStatuses: ["created", "processing"],
+  });
+});
+
+test("reconciles only complete matching refunds", () => {
+  const refund: StripeEvent = {
+    id: "evt_refund",
+    type: "charge.refunded",
+    data: {
+      object: {
+        amount: 2500,
+        amount_refunded: 2500,
+        currency: "usd",
+        metadata: { tip_id: "tip_1" },
+      },
+    },
+  };
+  assert.deepEqual(planTipTransition(refund, buildTip({ status: "paid" })), {
+    status: "refunded",
+    allowedCurrentStatuses: ["created", "processing", "paid", "failed"],
+  });
+  assert.throws(
+    () =>
+      planTipTransition(
+        {
+          ...refund,
+          data: { object: { ...refund.data.object, amount_refunded: 1000 } },
+        },
+        buildTip({ status: "paid" }),
+      ),
+    /does not match/,
+  );
+});
+
+test("creates one bounded chat message only for a paid provider event", () => {
+  const tip = buildTip({
+    event_id: "event_1",
+    from_user_id: "user_1",
+    message: "Thank you for hosting",
+  });
+  const event = buildCheckoutEvent();
+  assert.equal(isStripePaymentSuccessEvent(event), true);
+  assert.equal(buildTipChatMessage(tip), "$25.00 tip — Thank you for hosting");
+  assert.equal(
+    isStripePaymentSuccessEvent(buildCheckoutEvent({ payment_status: "unpaid" })),
+    false,
+  );
+  assert.equal(buildTipChatMessage(buildTip()), null);
+});
+
+test("requires safe absolute checkout return URLs", () => {
+  assert.deepEqual(buildStripeReturnUrls("https://accountabul.example/path", "tip 1"), {
+    successUrl: "https://accountabul.example/live?tip=success&tip_id=tip%201",
+    cancelUrl: "https://accountabul.example/live?tip=canceled&tip_id=tip%201",
+  });
+  assert.match(buildStripeReturnUrls("http://localhost:3000", "tip_1").successUrl, /localhost/);
+  assert.throws(() => buildStripeReturnUrls(undefined, "tip_1"), /required/);
+  assert.throws(() => buildStripeReturnUrls("/relative", "tip_1"), /absolute/);
+  assert.throws(() => buildStripeReturnUrls("http://example.com", "tip_1"), /HTTPS/);
 });
 
 function buildTip(overrides: Partial<TipForReconciliation> = {}): TipForReconciliation {

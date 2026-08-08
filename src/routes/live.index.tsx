@@ -5,6 +5,8 @@ import { PageShell } from "@/components/page-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime } from "@/lib/format";
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/live/")({
   head: () => ({
     meta: [
@@ -24,10 +26,19 @@ export const Route = createFileRoute("/live/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { tip?: "success" | "canceled"; tip_id?: string } => ({
+    ...(search["tip"] === "success" || search["tip"] === "canceled" ? { tip: search["tip"] } : {}),
+    ...(typeof search["tip_id"] === "string" && UUID_PATTERN.test(search["tip_id"])
+      ? { tip_id: search["tip_id"] }
+      : {}),
+  }),
   component: LivePage,
 });
 
 function LivePage() {
+  const search = Route.useSearch();
   const events = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
@@ -56,10 +67,52 @@ function LivePage() {
       audience="Public"
       phase="Phase 3"
     >
-      {events.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading the schedule…</p>
+      {search.tip ? (
+        <div className="surface-card mb-8 border-accent/40 p-5" role="status" aria-live="polite">
+          <h2 className="font-semibold">
+            {search.tip === "success" ? "Payment submitted" : "Tip checkout canceled"}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {search.tip === "success"
+              ? "Your payment provider is confirming the result. A browser redirect never marks a tip paid."
+              : "Checkout ended without changing the tip to paid. You can return to a live room and try again."}
+          </p>
+          {search.tip === "success" ? (
+            <Link
+              to="/dashboard/billing"
+              className="mt-3 inline-flex text-sm font-medium text-accent underline-offset-4 hover:underline"
+            >
+              Check receipt status
+            </Link>
+          ) : null}
+          {search.tip_id ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Reference: <span className="font-mono">{search.tip_id}</span>
+            </p>
+          ) : null}
+        </div>
       ) : null}
-      {!events.isLoading && all.length === 0 ? (
+      {events.isLoading ? (
+        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+          Loading the schedule…
+        </p>
+      ) : null}
+      {events.isError ? (
+        <div className="surface-card p-6" role="alert">
+          <h2 className="font-semibold">The event schedule could not be loaded</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Check your connection, then try the schedule again.
+          </p>
+          <button
+            type="button"
+            className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            onClick={() => void events.refetch()}
+          >
+            Try again
+          </button>
+        </div>
+      ) : null}
+      {!events.isLoading && !events.isError && all.length === 0 ? (
         <div className="surface-card p-6">
           <h2 className="font-semibold">No events scheduled yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -69,9 +122,13 @@ function LivePage() {
         </div>
       ) : null}
 
-      <Section title="Live now" empty="No room is live right now." events={liveNow} />
-      <Section title="Scheduled" empty="Nothing on the calendar yet." events={scheduled} />
-      <Section title="Replays" empty="No replays published yet." events={replays} />
+      {!events.isError ? (
+        <>
+          <Section title="Live now" empty="No room is live right now." events={liveNow} />
+          <Section title="Scheduled" empty="Nothing on the calendar yet." events={scheduled} />
+          <Section title="Replays" empty="No replays published yet." events={replays} />
+        </>
+      ) : null}
     </PageShell>
   );
 }

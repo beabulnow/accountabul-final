@@ -95,23 +95,27 @@ function BusinessPage() {
 
   const create = useMutation({
     mutationFn: async () => {
+      if (!userId) throw new Error("Sign in before creating a business.");
+      if (!form.legal_name.trim() || !form.display_name.trim()) {
+        throw new Error("Legal name and display name are required.");
+      }
       const base = slugify(form.display_name || form.legal_name);
       const slug = `${base || "business"}-${Math.random().toString(36).slice(2, 7)}`;
-      const { data, error } = await supabase
-        .from("businesses")
-        .insert({ ...form, slug, created_by: userId! })
-        .select("id")
-        .single();
-      if (error) throw error;
-
-      const { error: memberError } = await supabase.from("business_members").insert({
-        business_id: data.id,
-        user_id: userId!,
-        membership_role: "owner",
-        invitation_status: "active",
-        joined_at: new Date().toISOString(),
+      const { error } = await supabase.rpc("create_business_with_owner", {
+        _slug: slug,
+        _legal_name: form.legal_name,
+        _display_name: form.display_name,
+        _headline: form.headline || null,
+        _description: form.description || null,
+        _website_url: form.website_url || null,
+        _public_email: form.public_email || null,
+        _public_phone: form.public_phone || null,
+        _primary_industry: form.primary_industry || null,
+        _address_city: form.address_city || null,
+        _address_state: form.address_state || null,
+        _address_country: form.address_country || null,
       });
-      if (memberError) throw memberError;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Business created. You are the owner.");
@@ -238,6 +242,13 @@ function BusinessPage() {
       </form>
 
       {business ? <CredentialsPanel businessId={business.id} /> : null}
+      {business ? (
+        <StaffPanel
+          businessId={business.id}
+          currentUserId={userId!}
+          canManage={membership.data?.membership_role === "owner"}
+        />
+      ) : null}
     </div>
   );
 }
@@ -324,6 +335,139 @@ function CredentialsPanel({ businessId }: { businessId: string }) {
           </Button>
         </div>
       </form>
+    </section>
+  );
+}
+
+function StaffPanel({
+  businessId,
+  currentUserId,
+  canManage,
+}: {
+  businessId: string;
+  currentUserId: string;
+  canManage: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const [memberId, setMemberId] = useState("");
+  const [role, setRole] = useState<"manager" | "listing_manager" | "lead_manager" | "viewer">(
+    "viewer",
+  );
+  const members = useQuery({
+    queryKey: ["business-staff", businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("business_members")
+        .select("id, user_id, membership_role, invitation_status, joined_at")
+        .eq("business_id", businessId)
+        .order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const addMember = useMutation({
+    mutationFn: async () => {
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          memberId.trim(),
+        )
+      ) {
+        throw new Error("Enter the existing member's account UUID.");
+      }
+      const { error } = await supabase.from("business_members").insert({
+        business_id: businessId,
+        user_id: memberId.trim(),
+        membership_role: role,
+        invitation_status: "active",
+        invited_by: currentUserId,
+        joined_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setMemberId("");
+      toast.success("Staff membership added.");
+      void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const revokeMember = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("business_members")
+        .update({ invitation_status: "revoked" })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Staff access revoked.");
+      void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <section className="surface-card mt-6 p-6">
+      <h2 className="text-lg font-semibold">Staff access</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Owners can add an existing Accountabul member by account UUID and assign least-privilege
+        access.
+      </p>
+      <ul className="mt-4 space-y-2 text-sm">
+        {members.data?.map((member) => (
+          <li
+            key={member.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3"
+          >
+            <span>
+              {member.user_id.slice(0, 8)}… · {member.membership_role.replace("_", " ")} ·{" "}
+              {member.invitation_status}
+            </span>
+            {canManage &&
+            member.membership_role !== "owner" &&
+            member.invitation_status !== "revoked" ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={revokeMember.isPending}
+                onClick={() => revokeMember.mutate(member.id)}
+              >
+                Revoke
+              </Button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {canManage ? (
+        <form
+          className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
+          onSubmit={(event) => {
+            event.preventDefault();
+            addMember.mutate();
+          }}
+        >
+          <Input
+            value={memberId}
+            onChange={(event) => setMemberId(event.target.value)}
+            placeholder="Existing member account UUID"
+            aria-label="Existing member account UUID"
+          />
+          <select
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            value={role}
+            onChange={(event) => setRole(event.target.value as typeof role)}
+            aria-label="Staff role"
+          >
+            <option value="manager">Manager</option>
+            <option value="listing_manager">Listing manager</option>
+            <option value="lead_manager">Lead manager</option>
+            <option value="viewer">Viewer</option>
+          </select>
+          <Button type="submit" disabled={addMember.isPending || !memberId.trim()}>
+            Add staff
+          </Button>
+        </form>
+      ) : null}
     </section>
   );
 }

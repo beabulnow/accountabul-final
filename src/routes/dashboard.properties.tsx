@@ -11,6 +11,11 @@ import { useMyBusiness } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, parseMoneyToMinor, uniqueSlug } from "@/lib/format";
+import {
+  isRemoteImageUrl,
+  propertyMediaObjectPath,
+  validatePropertyImage,
+} from "@/lib/property-media";
 import { SignedOut } from "./dashboard.profile";
 
 export const Route = createFileRoute("/dashboard/properties")({
@@ -58,7 +63,9 @@ function PropertiesDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id, slug, title, status, price_minor, currency, address_city, created_at")
+        .select(
+          "id, slug, title, status, price_minor, currency, address_city, cover_path, created_at",
+        )
         .eq("business_id", businessId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -70,6 +77,9 @@ function PropertiesDashboard() {
     mutationFn: async () => {
       if (!businessId || !userId) throw new Error("Create your business profile first.");
       if (!draft.title.trim()) throw new Error("A listing title is required.");
+      if (draft.cover_path.trim() && !isRemoteImageUrl(draft.cover_path.trim())) {
+        throw new Error("Cover URLs must use HTTPS. You can also upload a photo after saving.");
+      }
       const { error } = await supabase.from("properties").insert({
         business_id: businessId,
         created_by: userId,
@@ -115,6 +125,45 @@ function PropertiesDashboard() {
       void queryClient.invalidateQueries({ queryKey: ["dashboard-properties"] });
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+
+  const uploadCover = useMutation({
+    mutationFn: async ({ propertyId, file }: { propertyId: string; file: File }) => {
+      if (!businessId) throw new Error("Create your business profile first.");
+      validatePropertyImage(file);
+      const path = propertyMediaObjectPath(businessId, propertyId, file);
+      const upload = await supabase.storage.from("property-media").upload(path, file, {
+        cacheControl: "3600",
+        contentType: file.type,
+        upsert: false,
+      });
+      if (upload.error) throw upload.error;
+
+      const media = await supabase
+        .from("property_media")
+        .insert({ property_id: propertyId, storage_path: path, alt_text: file.name })
+        .select("id")
+        .single();
+      if (media.error) {
+        await supabase.storage.from("property-media").remove([path]);
+        throw media.error;
+      }
+
+      const cover = await supabase
+        .from("properties")
+        .update({ cover_path: path })
+        .eq("id", propertyId);
+      if (cover.error) {
+        await supabase.from("property_media").delete().eq("id", media.data.id);
+        await supabase.storage.from("property-media").remove([path]);
+        throw cover.error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Cover photo uploaded.");
+      void queryClient.invalidateQueries({ queryKey: ["dashboard-properties"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   if (loading) return <p className="text-sm text-muted-foreground">Checking your session…</p>;
@@ -235,6 +284,20 @@ function PropertiesDashboard() {
                     {formatMoney(l.price_minor, l.currency)} · {l.address_city ?? "No city"} ·{" "}
                     {l.status.replace("_", " ")}
                   </p>
+                  <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-accent underline-offset-4 hover:underline">
+                    {l.cover_path ? "Replace cover photo" : "Upload cover photo"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      disabled={uploadCover.isPending}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) uploadCover.mutate({ propertyId: l.id, file });
+                        event.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
                 </div>
                 <div className="flex gap-2">
                   {l.status === "draft" ? (

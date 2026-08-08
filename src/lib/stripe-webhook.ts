@@ -23,6 +23,9 @@ export type TipForReconciliation = {
   currency: string;
   provider_record_id: string | null;
   status: "created" | "processing" | "paid" | "failed" | "refunded";
+  event_id?: string;
+  from_user_id?: string;
+  message?: string | null;
 };
 
 export type TipTransition = {
@@ -58,6 +61,44 @@ export function getStripeTipId(event: StripeEvent): string | null {
   const object = event.data.object;
   const value = object.client_reference_id ?? object.metadata?.["tip_id"];
   return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+export function isStripePaymentSuccessEvent(event: StripeEvent) {
+  return (
+    (event.type === "checkout.session.completed" ||
+      event.type === "checkout.session.async_payment_succeeded") &&
+    event.data.object.payment_status === "paid"
+  );
+}
+
+export function buildTipChatMessage(tip: TipForReconciliation): string | null {
+  if (!tip.event_id || !tip.from_user_id) return null;
+  const amount = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: tip.currency,
+  }).format(tip.amount_minor / 100);
+  const note = tip.message?.trim();
+  return `${amount} tip${note ? ` — ${note}` : ""}`.slice(0, 500);
+}
+
+export function buildStripeReturnUrls(siteUrl: string | undefined, tipId: string) {
+  if (!siteUrl) throw new Error("PUBLIC_SITE_URL is required before Stripe can be enabled.");
+  let url: URL;
+  try {
+    url = new URL(siteUrl);
+  } catch {
+    throw new Error("PUBLIC_SITE_URL must be an absolute URL.");
+  }
+  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  if (url.protocol !== "https:" && !(local && url.protocol === "http:")) {
+    throw new Error("PUBLIC_SITE_URL must use HTTPS outside local development.");
+  }
+  const origin = url.origin;
+  const encodedTipId = encodeURIComponent(tipId);
+  return {
+    successUrl: `${origin}/live?tip=success&tip_id=${encodedTipId}`,
+    cancelUrl: `${origin}/live?tip=canceled&tip_id=${encodedTipId}`,
+  };
 }
 
 export function planTipTransition(

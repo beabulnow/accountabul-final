@@ -26,24 +26,20 @@ SECURITY`, policies.
 Legacy data from the source projects is imported only in Phase 5.
 
 - Importers are **idempotent**: re-running a batch must not duplicate rows.
-- Every imported row carries `source_system`, `legacy_id`, `migration_batch_id`, and
-  `migrated_at`; mapping lives in `migration_record_map`.
-- Unique constraints on `(source_system, legacy_id)` enforce idempotency.
+- Provenance lives in `migration_record_map`: `source_system`, `legacy_id`, target table
+  and deterministic target ID, migration batch, and `migrated_at`.
+- The unique `(source_system, legacy_id, target_table)` mapping plus deterministic target
+  IDs enforce idempotent, resumable writes.
 - Every import runs **dry-run first** and emits a reconciliation report: counts in, rows
   created, rows updated, rows skipped, unresolved identities, corrupt or missing assets.
 - Unresolved identities and corrupt assets are **reported, never guessed**.
-- Money is converted to integer minor units at import time and reconciled against the
-  source total before the batch is accepted.
-- Media is re-hosted with checksum verification; a failed asset produces an intentional
-  fallback, not a broken reference.
+- Money arrives as validated integer minor units and reconciles against
+  `expectedPriceTotalMinor` before apply is allowed.
+- Media is re-hosted by the cutover operator with checksum verification. The importer
+  refuses apply when an asset reference lacks both a path and SHA-256; failed assets are
+  reported for intentional fallback instead of guessed.
 
 ## Cutover runbook (Phase 5 deliverable)
 
-1. Freeze legacy writes and record the freeze timestamp.
-2. Full backup and restore rehearsal on a scratch environment.
-3. Dry-run import; review reconciliation report; resolve exceptions.
-4. Live import in batches with per-batch verification.
-5. Smoke test critical read/write paths per role.
-6. Flip DNS/traffic; keep legacy read-only for the agreed rollback window.
-7. Rollback trigger: any unrecoverable data-integrity failure — restore backup, revert
-   traffic, and file an incident record.
+See `docs/OPERATIONS_RUNBOOK.md` for the operator roles, backup plus Storage export,
+restore rehearsal, dry-run/apply commands, cutover, rollback, and incident procedures.

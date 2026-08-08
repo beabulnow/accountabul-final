@@ -1,0 +1,9 @@
+{
+  "url": "http://127.0.0.1:3012/marketplace",
+  "requests": 100,
+  "concurrency": 10,
+  "failures": 0,
+  "p50Ms": 1050,
+  "p95Ms": 2420,
+  "maxMs": 3932
+}
