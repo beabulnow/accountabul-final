@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import type { ComponentProps } from "react";
 
-type FooterLink = { to: React.ComponentProps<typeof Link>["to"]; label: string };
+type FooterLink = { to: ComponentProps<typeof Link>["to"]; label: string };
 
 export function SiteFooter() {
   return (
