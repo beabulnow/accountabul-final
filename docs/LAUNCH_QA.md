@@ -21,7 +21,8 @@ guards, live provider state copy, and the server-only chat boundary. Its machine
 result is `artifacts/phase6-static-qa.json`.
 
 Build and start the Cloudflare/Nitro production preview (the pinned local Wrangler package
-is required by this target), then run:
+is required by this target). The script invokes Wrangler directly because Nitro's preview
+launcher cannot resolve `npx` on Windows. Then run:
 
 ```sh
 npm run build
