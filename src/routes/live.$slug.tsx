@@ -302,11 +302,26 @@ function TipPanel({ eventId }: { eventId: string }) {
   const tip = useServerFn(createTipIntent);
 
   const submit = useMutation({
-    mutationFn: async () => {
-      const dollars = Number(amount.replace(/[^0-9.]/g, ""));
+    mutationFn: async ({
+      attemptId,
+      submittedAmount,
+      submittedMessage,
+    }: {
+      attemptId: string;
+      submittedAmount: string;
+      submittedMessage: string;
+    }) => {
+      const dollars = Number(submittedAmount.replace(/[^0-9.]/g, ""));
       if (!Number.isFinite(dollars) || dollars < 1)
         throw new Error("Enter an amount of $1 or more.");
-      return tip({ data: { eventId, amountMinor: Math.round(dollars * 100), message } });
+      return tip({
+        data: {
+          eventId,
+          amountMinor: Math.round(dollars * 100),
+          attemptId,
+          message: submittedMessage,
+        },
+      });
     },
     onSuccess: (result) => {
       if (result.checkoutUrl) {
@@ -333,7 +348,11 @@ function TipPanel({ eventId }: { eventId: string }) {
         className="mt-4 flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          submit.mutate();
+          submit.mutate({
+            attemptId: crypto.randomUUID(),
+            submittedAmount: amount,
+            submittedMessage: message,
+          });
         }}
       >
         <Input
