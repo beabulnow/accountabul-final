@@ -17,7 +17,7 @@ const links = [
 function DashboardLayout() {
   return (
     <div className="container-page py-8">
-      <nav aria-label="Dashboard" className="mb-2 flex gap-1 overflow-x-auto pb-2">
+      <nav aria-label="Dashboard" className="mb-2 flex flex-wrap gap-1 pb-2">
         {links.map((l) => (
           <Link
             key={l.to}

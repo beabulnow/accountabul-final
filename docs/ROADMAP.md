@@ -2,9 +2,11 @@
 
 Each phase ends deployable. No phase silently broadens the MVP.
 
-Current milestone: **Phase 1 gate closure**. The application contains partial implementation
-from later phases, but a phase is complete only after its gate is evidenced. See
-`docs/PHASE_STATUS.md` for the evidence-based status ledger.
+Current milestone: **Phase 6 connected launch-gate closure**. Credential-free implementation
+through Phase 6 is complete, including the signed-out Chromium viewport matrix. Authenticated
+role, provider, deployed cross-browser, screen-reader, and monitoring evidence remains before
+the connected launch gate can be marked complete. See `docs/PHASE_STATUS.md` for the
+evidence-based status ledger.
 
 ## Phase 0 — Foundation and threat model
 

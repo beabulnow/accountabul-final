@@ -56,6 +56,7 @@ export async function runStaticQa() {
   }
 
   const root = await readFile(resolve(projectRoot, "src/routes/__root.tsx"), "utf8");
+  const dashboardLayout = await readFile(resolve(projectRoot, "src/routes/dashboard.tsx"), "utf8");
   const sharedSources = await Promise.all(
     [
       "src/components/fallback-image.tsx",
@@ -100,6 +101,21 @@ export async function runStaticQa() {
       !allApplicationSource.includes("<iframe") ||
         /<iframe[\s\S]*?\btitle=/.test(allApplicationSource),
       "embedded player has an accessible title",
+    ),
+  );
+  results.push(
+    check(
+      "responsive:dashboard-navigation",
+      dashboardLayout.includes("flex-wrap") && !dashboardLayout.includes("overflow-x-auto"),
+      "all dashboard destinations remain visible without horizontal scrolling",
+    ),
+  );
+  const profileRoute = sources.get("src/routes/dashboard.profile.tsx") ?? "";
+  results.push(
+    check(
+      "a11y:signed-out-heading",
+      profileRoute.includes('<h1 className="text-lg font-semibold">Sign in required</h1>'),
+      "shared private-route signed-out state has a page-level heading",
     ),
   );
 

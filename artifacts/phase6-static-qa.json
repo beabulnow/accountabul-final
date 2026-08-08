@@ -1,7 +1,7 @@
 {
   "scope": "credential-free static route, accessibility, live-state, and chat-boundary checks",
   "routeCount": 18,
-  "passed": 48,
+  "passed": 50,
   "failed": 0,
   "results": [
     {
@@ -208,6 +208,16 @@
       "name": "a11y:iframe-title",
       "pass": true,
       "detail": "embedded player has an accessible title"
+    },
+    {
+      "name": "responsive:dashboard-navigation",
+      "pass": true,
+      "detail": "all dashboard destinations remain visible without horizontal scrolling"
+    },
+    {
+      "name": "a11y:signed-out-heading",
+      "pass": true,
+      "detail": "shared private-route signed-out state has a page-level heading"
     },
     {
       "name": "live-state:Connecting to the stream",

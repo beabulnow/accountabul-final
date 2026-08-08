@@ -48,6 +48,23 @@ The signed-in pass must cover member, business owner/staff, moderator, and admin
 exercise loading, empty, error, retry, success, permission-denied, missing-image,
 scheduled, connecting, live, reconnecting, ended, and provider-down states.
 
+### Latest credential-free browser pass
+
+On 2026-08-08, the production preview passed all 18 routes in the Codex in-app Chromium
+browser at exact 360x800, 768x1024, and 1440x900 viewports: 54/54 combinations, with no
+document overflow, clipped interactive controls, undersized interactive target, route error
+shell, or captured console warning/error. The mobile menu expanded with the expected seven
+destinations, missing event and business URLs reached intentional terminal states, and the
+shared signed-out private-route state exposed a page-level heading.
+
+That pass found and fixed two real defects: dashboard destinations were hidden behind
+horizontal scrolling at 360px, and the shared signed-out private-route state started at an
+`h2` without a page-level heading. Regression checks now cover both. Machine-readable scope
+and results are in `artifacts/phase6-browser-qa.json`.
+
+This is the signed-out Chromium slice only. It does not replace the required authenticated
+role matrix, Firefox/Safari/Edge passes, real screen-reader pass, or deployed provider tests.
+
 ## Connected gate evidence still required
 
 - Run the Phase 1 two-user/two-business RLS workflow with the three Supabase secrets.
