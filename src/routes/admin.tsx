@@ -271,14 +271,11 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: "scheduled" | "live" | "ended" | "replay_available" | "canceled" }) => {
-      const { error } = await supabase
-        .from("events")
-        .update({
-          status,
-          actual_start_at: status === "live" ? new Date().toISOString() : undefined,
-          ended_at: status === "ended" ? new Date().toISOString() : undefined,
-        })
-        .eq("id", id);
+      const patch: { status: typeof status; actual_start_at?: string; ended_at?: string } = { status };
+      if (status === "live") patch.actual_start_at = new Date().toISOString();
+      if (status === "ended") patch.ended_at = new Date().toISOString();
+      const { error } = await supabase.from("events").update(patch).eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => {
