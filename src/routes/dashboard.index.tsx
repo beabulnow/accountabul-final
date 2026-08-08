@@ -74,11 +74,30 @@ function DashboardHome() {
           cta={b ? "Manage business" : "Create business"}
         />
         <Card
+          title="Listings"
+          body="Publish and update the properties your business represents."
+          to="/dashboard/properties"
+          cta="Manage listings"
+        />
+        <Card
+          title="Leads"
+          body="Track inbound property and service inquiries."
+          to="/dashboard/leads"
+          cta="Open leads"
+        />
+        <Card
+          title="Billing"
+          body="Review tips sent and confirmed tips your business received."
+          to="/dashboard/billing"
+          cta="View billing"
+        />
+        <Card
           title="Directory"
           body="See how published businesses appear to the public."
           to="/businesses"
           cta="Open directory"
         />
+
       </div>
     </div>
   );

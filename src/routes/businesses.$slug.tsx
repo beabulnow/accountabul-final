@@ -1,8 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { PageShell } from "@/components/page-shell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
+import { formatMoney } from "@/lib/format";
+
 
 export const Route = createFileRoute("/businesses/$slug")({
   head: () => ({
@@ -103,9 +111,146 @@ function BusinessDetailPage() {
           </dl>
         </aside>
       </div>
+
+      <BusinessServices businessId={b.id} />
+      <BusinessListings businessId={b.id} />
     </PageShell>
   );
 }
+
+function BusinessServices({ businessId }: { businessId: string }) {
+  const [activeService, setActiveService] = useState<string | null>(null);
+
+  const services = useQuery({
+    queryKey: ["business-services", businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("id, name, summary, category, price_minor, currency, price_note, service_areas")
+        .eq("business_id", businessId)
+        .eq("status", "published")
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  if (!services.data?.length) return null;
+
+  return (
+    <section className="surface-card mt-8 p-6">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Services</h2>
+      <ul className="mt-4 grid gap-4 md:grid-cols-2">
+        {services.data.map((s) => (
+          <li key={s.id} className="rounded-lg border border-border p-4">
+            <p className="font-medium">{s.name}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{s.category ?? "General service"}</p>
+            {s.summary ? <p className="mt-2 text-sm leading-relaxed">{s.summary}</p> : null}
+            <p className="mt-3 text-sm font-medium">
+              {s.price_minor != null ? formatMoney(Number(s.price_minor), s.currency) : (s.price_note ?? "Quote on request")}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3"
+              onClick={() => setActiveService(activeService === s.id ? null : s.id)}
+            >
+              {activeService === s.id ? "Close" : "Request this service"}
+            </Button>
+            {activeService === s.id ? <ServiceInquiryForm businessId={businessId} serviceId={s.id} /> : null}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ServiceInquiryForm({ businessId, serviceId }: { businessId: string; serviceId: string }) {
+  const { session } = useSession();
+  const [form, setForm] = useState({ contact_name: "", contact_email: "", contact_phone: "", message: "" });
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      if (!form.contact_name.trim() || !form.contact_email.trim() || !form.message.trim()) {
+        throw new Error("Name, email, and message are required.");
+      }
+      const { error } = await supabase.from("service_inquiries").insert({
+        business_id: businessId,
+        service_id: serviceId,
+        contact_name: form.contact_name.trim(),
+        contact_email: form.contact_email.trim(),
+        contact_phone: form.contact_phone.trim() || null,
+        message: form.message.trim(),
+        from_user_id: session?.user.id ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setForm({ contact_name: "", contact_email: "", contact_phone: "", message: "" });
+      toast.success("Request sent to the business.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <form
+      className="mt-4 grid gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit.mutate();
+      }}
+    >
+      <Input placeholder="Your name" aria-label="Your name" value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} />
+      <Input type="email" placeholder="Email" aria-label="Email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} />
+      <Input placeholder="Phone (optional)" aria-label="Phone" value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
+      <Textarea placeholder="What do you need?" aria-label="Message" rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+      <Button type="submit" size="sm" disabled={submit.isPending}>
+        Send request
+      </Button>
+    </form>
+  );
+}
+
+function BusinessListings({ businessId }: { businessId: string }) {
+  const listings = useQuery({
+    queryKey: ["business-listings", businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id, slug, title, address_city, address_state, price_minor, currency")
+        .eq("business_id", businessId)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  if (!listings.data?.length) return null;
+
+  return (
+    <section className="surface-card mt-8 p-6">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Listings</h2>
+      <ul className="mt-4 grid gap-3 md:grid-cols-2">
+        {listings.data.map((p) => (
+          <li key={p.id} className="rounded-lg border border-border p-4">
+            <Link to="/properties/$slug" params={{ slug: p.slug }} className="font-medium underline-offset-4 hover:underline">
+              {p.title}
+            </Link>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {[p.address_city, p.address_state].filter(Boolean).join(", ") || "Location on request"}
+            </p>
+            <p className="mt-2 text-sm font-medium">
+              {p.price_minor != null ? formatMoney(Number(p.price_minor), p.currency) : "Price on request"}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 
 function Row({ label, value }: { label: string; value: string }) {
   if (!value) return null;
