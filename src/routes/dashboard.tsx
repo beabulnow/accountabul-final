@@ -22,7 +22,7 @@ function DashboardLayout() {
           <Link
             key={l.to}
             to={l.to}
-            activeOptions={{ exact: l.exact ?? false }}
+            activeOptions={{ exact: "exact" in l }}
             className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             activeProps={{ className: "bg-secondary text-foreground font-medium" }}
           >

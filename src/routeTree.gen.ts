@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as SavedRouteImport } from './routes/saved'
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -69,39 +75,39 @@ const BusinessesSlugRoute = BusinessesSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardBillingRoute = DashboardBillingRouteImport.update({
-  id: '/dashboard/billing',
-  path: '/dashboard/billing',
-  getParentRoute: () => rootRouteImport,
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardBusinessRoute = DashboardBusinessRouteImport.update({
-  id: '/dashboard/business',
-  path: '/dashboard/business',
-  getParentRoute: () => rootRouteImport,
+  id: '/business',
+  path: '/business',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
-  id: '/dashboard/leads',
-  path: '/dashboard/leads',
-  getParentRoute: () => rootRouteImport,
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/dashboard/profile',
-  path: '/dashboard/profile',
-  getParentRoute: () => rootRouteImport,
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPropertiesRoute = DashboardPropertiesRouteImport.update({
-  id: '/dashboard/properties',
-  path: '/dashboard/properties',
-  getParentRoute: () => rootRouteImport,
+  id: '/properties',
+  path: '/properties',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardServicesRoute = DashboardServicesRouteImport.update({
-  id: '/dashboard/services',
-  path: '/dashboard/services',
-  getParentRoute: () => rootRouteImport,
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const LiveIndexRoute = LiveIndexRouteImport.update({
   id: '/live/',
@@ -122,6 +128,7 @@ const PropertiesSlugRoute = PropertiesSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/saved': typeof SavedRoute
@@ -163,6 +170,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/saved': typeof SavedRoute
@@ -185,6 +193,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/dashboard'
     | '/login'
     | '/marketplace'
     | '/saved'
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/dashboard'
     | '/login'
     | '/marketplace'
     | '/saved'
@@ -246,21 +256,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
   MarketplaceRoute: typeof MarketplaceRoute
   SavedRoute: typeof SavedRoute
   SignupRoute: typeof SignupRoute
   BusinessesSlugRoute: typeof BusinessesSlugRoute
-  DashboardBillingRoute: typeof DashboardBillingRoute
-  DashboardBusinessRoute: typeof DashboardBusinessRoute
-  DashboardLeadsRoute: typeof DashboardLeadsRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardPropertiesRoute: typeof DashboardPropertiesRoute
-  DashboardServicesRoute: typeof DashboardServicesRoute
   LiveSlugRoute: typeof LiveSlugRoute
   PropertiesSlugRoute: typeof PropertiesSlugRoute
   BusinessesIndexRoute: typeof BusinessesIndexRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
   LiveIndexRoute: typeof LiveIndexRoute
 }
 
@@ -278,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -324,52 +335,52 @@ declare module '@tanstack/react-router' {
     }
     '/dashboard/': {
       id: '/dashboard/'
-      path: '/dashboard'
+      path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/billing': {
       id: '/dashboard/billing'
-      path: '/dashboard/billing'
+      path: '/billing'
       fullPath: '/dashboard/billing'
       preLoaderRoute: typeof DashboardBillingRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/business': {
       id: '/dashboard/business'
-      path: '/dashboard/business'
+      path: '/business'
       fullPath: '/dashboard/business'
       preLoaderRoute: typeof DashboardBusinessRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/leads': {
       id: '/dashboard/leads'
-      path: '/dashboard/leads'
+      path: '/leads'
       fullPath: '/dashboard/leads'
       preLoaderRoute: typeof DashboardLeadsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/profile': {
       id: '/dashboard/profile'
-      path: '/dashboard/profile'
+      path: '/profile'
       fullPath: '/dashboard/profile'
       preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/properties': {
       id: '/dashboard/properties'
-      path: '/dashboard/properties'
+      path: '/properties'
       fullPath: '/dashboard/properties'
       preLoaderRoute: typeof DashboardPropertiesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/services': {
       id: '/dashboard/services'
-      path: '/dashboard/services'
+      path: '/services'
       fullPath: '/dashboard/services'
       preLoaderRoute: typeof DashboardServicesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/live/': {
       id: '/live/'
@@ -395,24 +406,42 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
-  LoginRoute: LoginRoute,
-  MarketplaceRoute: MarketplaceRoute,
-  SavedRoute: SavedRoute,
-  SignupRoute: SignupRoute,
-  BusinessesSlugRoute: BusinessesSlugRoute,
+interface DashboardRouteChildren {
+  DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardBusinessRoute: typeof DashboardBusinessRoute
+  DashboardLeadsRoute: typeof DashboardLeadsRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardPropertiesRoute: typeof DashboardPropertiesRoute
+  DashboardServicesRoute: typeof DashboardServicesRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBillingRoute: DashboardBillingRoute,
   DashboardBusinessRoute: DashboardBusinessRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardPropertiesRoute: DashboardPropertiesRoute,
   DashboardServicesRoute: DashboardServicesRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  LoginRoute: LoginRoute,
+  MarketplaceRoute: MarketplaceRoute,
+  SavedRoute: SavedRoute,
+  SignupRoute: SignupRoute,
+  BusinessesSlugRoute: BusinessesSlugRoute,
   LiveSlugRoute: LiveSlugRoute,
   PropertiesSlugRoute: PropertiesSlugRoute,
   BusinessesIndexRoute: BusinessesIndexRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
   LiveIndexRoute: LiveIndexRoute,
 }
 export const routeTree = rootRouteImport
