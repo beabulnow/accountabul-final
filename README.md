@@ -1,6 +1,12 @@
-# Accountabul Foundation
+# Accountabul Platform Production
 
-Create a BRAND-NEW standalone Lovable project named Accountabul Platform Production from the attached master build prompt. Do not reuse, remix, connect to, or modify any existing Lovable project or GitHub repository. Start with Phase 0 only: create the project foundation, preserve the specified route map and Accountabul visual direction, and add the required architecture, schema, RLS, reuse-ledger, migration, and phased-roadmap documents. Do not connect any existing repository and do not run destructive migrations.
+Accountabul is a TanStack Start application for member and business profiles, a real
+estate and services marketplace, live events and chat, and reconciled payments.
+
+The current milestone is **Phase 1 gate closure**. Later-phase product surfaces are
+present but are not considered complete until their documented end-to-end gates pass.
+Start with [`docs/PHASE_STATUS.md`](docs/PHASE_STATUS.md), then use
+[`docs/ROADMAP.md`](docs/ROADMAP.md) for scope and sequencing.
 
 This project was built with [Lovable](https://lovable.dev).
 
@@ -19,6 +25,10 @@ Prefer working locally? You need Node.js and npm — [install with nvm](https://
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
+npm ci
+npm run check
 npm run dev
 ```
+
+Copy `.env.example` to `.env` and supply local values. Never commit `.env` or place a
+service-role/provider secret in a `VITE_` variable.

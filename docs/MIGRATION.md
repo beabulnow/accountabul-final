@@ -1,10 +1,12 @@
 # Migration Policy and Plan — Accountabul Platform Production
 
-## Phase 0 status
+## Current status
 
-**No migration has been run. No destructive operation has been executed. No existing
-repository or backend has been connected.** The backend is enabled in Phase 1, after the
-schema (`docs/SCHEMA.md`) and threat model (`docs/RLS_THREAT_MODEL.md`) are signed off.
+The Supabase backend is connected and the committed schema covers the Phase 1–5
+foundation. No destructive migration is authorized by this document. Before adding a
+migration, verify the live migration list, create the file through the current Supabase
+CLI, apply it to a non-production environment first, and record the verification in the
+phase ledger.
 
 ## Schema migration rules
 

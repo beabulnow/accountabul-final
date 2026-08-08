@@ -1,7 +1,8 @@
 # Canonical Schema — Accountabul Platform Production
 
-Phase 0 deliverable: schema diagram + migration skeleton. **No migration has been run.**
-The first migration executes in Phase 1 after the RLS threat model is signed off.
+Originally authored as the Phase 0 schema plan. The connected Supabase backend now
+contains the Phase 1–5 foundation represented by the committed migrations. Live migration
+state must be verified with the Supabase CLI/MCP before each phase gate.
 
 ## Conventions (non-negotiable)
 

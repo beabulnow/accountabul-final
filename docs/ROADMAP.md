@@ -2,7 +2,11 @@
 
 Each phase ends deployable. No phase silently broadens the MVP.
 
-## Phase 0 — Foundation and threat model (this build)
+Current milestone: **Phase 1 gate closure**. The application contains partial implementation
+from later phases, but a phase is complete only after its gate is evidenced. See
+`docs/PHASE_STATUS.md` for the evidence-based status ledger.
+
+## Phase 0 — Foundation and threat model
 
 Delivered:
 
@@ -15,8 +19,8 @@ Delivered:
 - [x] Secret rotation checklist — inside `docs/RLS_THREAT_MODEL.md`.
 - [x] Reuse ledger — `REUSE_LEDGER.md`.
 - [x] Migration policy — `docs/MIGRATION.md` (no migrations run).
-- [ ] CI for types, lint, unit tests, build, migration checks, secret scanning —
-      configure at the start of Phase 1 alongside backend enablement.
+- [x] CI for types, lint, unit tests, build, migration checks, and secret scanning —
+      `.github/workflows/ci.yml`.
 
 Gate: no product feature work proceeds until authentication boundaries, business
 ownership, and environment secrets are demonstrably correct.
@@ -66,7 +70,21 @@ runbooks.
 Gate: migration reruns safely; unresolved identities and corrupt assets are reported, not
 guessed.
 
-## Phase 6 — Launch QA
+## Phase 6 — Wallet ownership and on-chain payment rails
+
+Migrations `0012`–`0013`. Non-custodial wallet linking through Xaman for XRPL and
+WalletConnect/Reown AppKit for explicitly allowlisted EVM networks; verified business
+payout destinations; provider-neutral on-chain payment attempts; testnet reconciliation;
+and explorer-linked receipts. Supabase authentication remains authoritative. A wallet
+signature proves address control only and never grants an Accountabul role.
+
+Gate: two users cannot mutate each other's wallets; replayed, expired, wrong-domain,
+wrong-chain, and wrong-address signatures fail; Xaman and EVM testnet payments reconcile
+exactly once; wrong recipient/amount/asset never marks a tip paid; no private key, seed,
+Xaman secret, or privileged RPC credential reaches the client bundle. Mainnet activation
+requires a separate explicit go/no-go.
+
+## Phase 7 — Launch QA
 
 Responsive visual QA on all routes, accessibility checks, cross-browser smoke tests, load
 tests for marketplace reads, chat fan-out, and webhook bursts, security and performance
