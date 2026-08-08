@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
+type FooterLink = { to: React.ComponentProps<typeof Link>["to"]; label: string };
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/40">
@@ -51,14 +53,14 @@ function FooterCol({
   links,
 }: {
   title: string;
-  links: { to: string; label: string }[];
+  links: FooterLink[];
 }) {
   return (
     <div>
       <p className="text-sm font-semibold">{title}</p>
       <ul className="mt-3 space-y-2">
         {links.map((l) => (
-          <li key={l.to}>
+          <li key={String(l.to)}>
             <Link to={l.to} className="text-sm text-muted-foreground hover:text-foreground">
               {l.label}
             </Link>
