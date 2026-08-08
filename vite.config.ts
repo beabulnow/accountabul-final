@@ -7,7 +7,7 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Keep Cloudflare builds reproducible and within the runtime shipped by pinned Wrangler.
-process.env.NITRO_COMPATIBILITY_DATE ??= "2026-05-27";
+process.env["NITRO_COMPATIBILITY_DATE"] ??= "2026-05-27";
 
 export default defineConfig({
   tanstackStart: {

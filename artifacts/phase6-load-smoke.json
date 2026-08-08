@@ -3,7 +3,7 @@
   "requests": 100,
   "concurrency": 10,
   "failures": 0,
-  "p50Ms": 233,
-  "p95Ms": 433,
-  "maxMs": 560
+  "p50Ms": 216,
+  "p95Ms": 349,
+  "maxMs": 359
 }

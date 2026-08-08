@@ -24,7 +24,7 @@ the roadmap's connected gate has passed.
 - `npm run preview` plus `npm run qa:smoke -- http://127.0.0.1:3013`: the pinned
   Cloudflare Worker preview started and 18/18 route shells passed.
 - `npm run qa:load -- http://127.0.0.1:3013`: 100 requests, concurrency 10, zero
-  failures (p50 233 ms, p95 433 ms, max 560 ms). This is a local smoke result, not a
+  failures (p50 216 ms, p95 349 ms, max 359 ms). This is a local smoke result, not a
   production capacity claim.
 - The skipped tests are intentionally connected gates and list the exact missing Supabase
   variables in their output.
