@@ -10,33 +10,258 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as BusinessesIndexRouteImport } from './routes/businesses.index'
+import { Route as BusinessesSlugRouteImport } from './routes/businesses.$slug'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
+import { Route as DashboardBusinessRouteImport } from './routes/dashboard.business'
+import { Route as DashboardLeadsRouteImport } from './routes/dashboard.leads'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
+import { Route as DashboardPropertiesRouteImport } from './routes/dashboard.properties'
+import { Route as DashboardServicesRouteImport } from './routes/dashboard.services'
+import { Route as LiveIndexRouteImport } from './routes/live.index'
+import { Route as LiveSlugRouteImport } from './routes/live.$slug'
+import { Route as PropertiesSlugRouteImport } from './routes/properties.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessesIndexRoute = BusinessesIndexRouteImport.update({
+  id: '/businesses/',
+  path: '/businesses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessesSlugRoute = BusinessesSlugRouteImport.update({
+  id: '/businesses/$slug',
+  path: '/businesses/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardBillingRoute = DashboardBillingRouteImport.update({
+  id: '/dashboard/billing',
+  path: '/dashboard/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardBusinessRoute = DashboardBusinessRouteImport.update({
+  id: '/dashboard/business',
+  path: '/dashboard/business',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
+  id: '/dashboard/leads',
+  path: '/dashboard/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/dashboard/profile',
+  path: '/dashboard/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardPropertiesRoute = DashboardPropertiesRouteImport.update({
+  id: '/dashboard/properties',
+  path: '/dashboard/properties',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardServicesRoute = DashboardServicesRouteImport.update({
+  id: '/dashboard/services',
+  path: '/dashboard/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveIndexRoute = LiveIndexRouteImport.update({
+  id: '/live/',
+  path: '/live/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveSlugRoute = LiveSlugRouteImport.update({
+  id: '/live/$slug',
+  path: '/live/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropertiesSlugRoute = PropertiesSlugRouteImport.update({
+  id: '/properties/$slug',
+  path: '/properties/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/properties': typeof DashboardPropertiesRoute
+  '/dashboard/services': typeof DashboardServicesRoute
+  '/live/$slug': typeof LiveSlugRoute
+  '/properties/$slug': typeof PropertiesSlugRoute
+  '/businesses/': typeof BusinessesIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/live/': typeof LiveIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/properties': typeof DashboardPropertiesRoute
+  '/dashboard/services': typeof DashboardServicesRoute
+  '/live/$slug': typeof LiveSlugRoute
+  '/properties/$slug': typeof PropertiesSlugRoute
+  '/businesses': typeof BusinessesIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/live': typeof LiveIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/login': typeof LoginRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/business': typeof DashboardBusinessRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/properties': typeof DashboardPropertiesRoute
+  '/dashboard/services': typeof DashboardServicesRoute
+  '/live/$slug': typeof LiveSlugRoute
+  '/properties/$slug': typeof PropertiesSlugRoute
+  '/businesses/': typeof BusinessesIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/live/': typeof LiveIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/marketplace'
+    | '/saved'
+    | '/signup'
+    | '/businesses/$slug'
+    | '/dashboard/billing'
+    | '/dashboard/business'
+    | '/dashboard/leads'
+    | '/dashboard/profile'
+    | '/dashboard/properties'
+    | '/dashboard/services'
+    | '/live/$slug'
+    | '/properties/$slug'
+    | '/businesses/'
+    | '/dashboard/'
+    | '/live/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/marketplace'
+    | '/saved'
+    | '/signup'
+    | '/businesses/$slug'
+    | '/dashboard/billing'
+    | '/dashboard/business'
+    | '/dashboard/leads'
+    | '/dashboard/profile'
+    | '/dashboard/properties'
+    | '/dashboard/services'
+    | '/live/$slug'
+    | '/properties/$slug'
+    | '/businesses'
+    | '/dashboard'
+    | '/live'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/marketplace'
+    | '/saved'
+    | '/signup'
+    | '/businesses/$slug'
+    | '/dashboard/billing'
+    | '/dashboard/business'
+    | '/dashboard/leads'
+    | '/dashboard/profile'
+    | '/dashboard/properties'
+    | '/dashboard/services'
+    | '/live/$slug'
+    | '/properties/$slug'
+    | '/businesses/'
+    | '/dashboard/'
+    | '/live/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  LoginRoute: typeof LoginRoute
+  MarketplaceRoute: typeof MarketplaceRoute
+  SavedRoute: typeof SavedRoute
+  SignupRoute: typeof SignupRoute
+  BusinessesSlugRoute: typeof BusinessesSlugRoute
+  DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardBusinessRoute: typeof DashboardBusinessRoute
+  DashboardLeadsRoute: typeof DashboardLeadsRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardPropertiesRoute: typeof DashboardPropertiesRoute
+  DashboardServicesRoute: typeof DashboardServicesRoute
+  LiveSlugRoute: typeof LiveSlugRoute
+  PropertiesSlugRoute: typeof PropertiesSlugRoute
+  BusinessesIndexRoute: typeof BusinessesIndexRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  LiveIndexRoute: typeof LiveIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +273,147 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/businesses/': {
+      id: '/businesses/'
+      path: '/businesses'
+      fullPath: '/businesses/'
+      preLoaderRoute: typeof BusinessesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/businesses/$slug': {
+      id: '/businesses/$slug'
+      path: '/businesses/$slug'
+      fullPath: '/businesses/$slug'
+      preLoaderRoute: typeof BusinessesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/dashboard/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/business': {
+      id: '/dashboard/business'
+      path: '/dashboard/business'
+      fullPath: '/dashboard/business'
+      preLoaderRoute: typeof DashboardBusinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/leads': {
+      id: '/dashboard/leads'
+      path: '/dashboard/leads'
+      fullPath: '/dashboard/leads'
+      preLoaderRoute: typeof DashboardLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/dashboard/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/properties': {
+      id: '/dashboard/properties'
+      path: '/dashboard/properties'
+      fullPath: '/dashboard/properties'
+      preLoaderRoute: typeof DashboardPropertiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/services': {
+      id: '/dashboard/services'
+      path: '/dashboard/services'
+      fullPath: '/dashboard/services'
+      preLoaderRoute: typeof DashboardServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live/': {
+      id: '/live/'
+      path: '/live'
+      fullPath: '/live/'
+      preLoaderRoute: typeof LiveIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live/$slug': {
+      id: '/live/$slug'
+      path: '/live/$slug'
+      fullPath: '/live/$slug'
+      preLoaderRoute: typeof LiveSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/properties/$slug': {
+      id: '/properties/$slug'
+      path: '/properties/$slug'
+      fullPath: '/properties/$slug'
+      preLoaderRoute: typeof PropertiesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  LoginRoute: LoginRoute,
+  MarketplaceRoute: MarketplaceRoute,
+  SavedRoute: SavedRoute,
+  SignupRoute: SignupRoute,
+  BusinessesSlugRoute: BusinessesSlugRoute,
+  DashboardBillingRoute: DashboardBillingRoute,
+  DashboardBusinessRoute: DashboardBusinessRoute,
+  DashboardLeadsRoute: DashboardLeadsRoute,
+  DashboardProfileRoute: DashboardProfileRoute,
+  DashboardPropertiesRoute: DashboardPropertiesRoute,
+  DashboardServicesRoute: DashboardServicesRoute,
+  LiveSlugRoute: LiveSlugRoute,
+  PropertiesSlugRoute: PropertiesSlugRoute,
+  BusinessesIndexRoute: BusinessesIndexRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  LiveIndexRoute: LiveIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

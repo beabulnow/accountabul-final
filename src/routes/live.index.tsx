@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PageShell, ScopeList } from "@/components/page-shell";
 
-export const Route = createFileRoute("/live")({
+export const Route = createFileRoute("/live/")({
   head: () => ({
     meta: [
       { title: "Live events — Accountabul" },

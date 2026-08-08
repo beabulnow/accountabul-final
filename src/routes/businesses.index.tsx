@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { PageShell, ScopeList } from "@/components/page-shell";
 
-export const Route = createFileRoute("/businesses")({
+export const Route = createFileRoute("/businesses/")({
   head: () => ({
     meta: [
       { title: "Business directory — Accountabul" },
