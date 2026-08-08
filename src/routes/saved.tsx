@@ -12,7 +12,10 @@ export const Route = createFileRoute("/saved")({
       { title: "Saved listings — Accountabul" },
       { name: "description", content: "Your saved Accountabul listings, private to your account." },
       { property: "og:title", content: "Saved listings — Accountabul" },
-      { property: "og:description", content: "Your saved Accountabul listings, private to your account." },
+      {
+        property: "og:description",
+        content: "Your saved Accountabul listings, private to your account.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -30,7 +33,9 @@ function SavedPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("saved_properties")
-        .select("id, created_at, properties(id, slug, title, address_city, address_state, price_minor, currency, cover_path, status)")
+        .select(
+          "id, created_at, properties(id, slug, title, address_city, address_state, price_minor, currency, cover_path, status)",
+        )
         .eq("user_id", userId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -78,19 +83,31 @@ function SavedPage() {
               >
                 <div className="aspect-[4/3] w-full bg-secondary">
                   {row.properties.cover_path ? (
-                    <img src={row.properties.cover_path} alt={row.properties.title} loading="lazy" className="size-full object-cover" />
+                    <img
+                      src={row.properties.cover_path}
+                      alt={row.properties.title}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
                   ) : (
-                    <div className="flex size-full items-center justify-center text-xs text-muted-foreground">No photo</div>
+                    <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
+                      No photo
+                    </div>
                   )}
                 </div>
                 <div className="p-5">
                   <h2 className="font-semibold">{row.properties.title}</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {locationLabel([row.properties.address_city, row.properties.address_state]) || "Location on request"}
+                    {locationLabel([row.properties.address_city, row.properties.address_state]) ||
+                      "Location on request"}
                   </p>
-                  <p className="mt-2 font-semibold">{formatMoney(row.properties.price_minor, row.properties.currency)}</p>
+                  <p className="mt-2 font-semibold">
+                    {formatMoney(row.properties.price_minor, row.properties.currency)}
+                  </p>
                   {row.properties.status !== "published" ? (
-                    <p className="mt-2 text-xs text-muted-foreground">This listing is no longer published.</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      This listing is no longer published.
+                    </p>
                   ) : null}
                 </div>
               </Link>

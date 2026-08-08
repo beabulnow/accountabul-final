@@ -14,13 +14,13 @@ The master prompt recommends Next.js App Router. This build runs on the platform
 supported stack: **TanStack Start v1 (React 19, Vite 7, TypeScript), deployed to an edge
 worker runtime**. This satisfies every requirement the recommendation existed to serve:
 
-| Requirement | TanStack Start equivalent |
-|---|---|
-| Server Components for initial reads | Route loaders executing server-side during SSR |
-| Server Actions / route handlers for mutations | `createServerFn` typed RPC |
-| Public HTTP endpoints and webhooks | Server routes under `src/routes/api/public/*` |
-| File-based routing | `src/routes/` with generated route tree |
-| Per-route metadata | Route `head()` |
+| Requirement                                   | TanStack Start equivalent                      |
+| --------------------------------------------- | ---------------------------------------------- |
+| Server Components for initial reads           | Route loaders executing server-side during SSR |
+| Server Actions / route handlers for mutations | `createServerFn` typed RPC                     |
+| Public HTTP endpoints and webhooks            | Server routes under `src/routes/api/public/*`  |
+| File-based routing                            | `src/routes/` with generated route tree        |
+| Per-route metadata                            | Route `head()`                                 |
 
 Consequence: no `next/*` APIs, no `react-router-dom`. All page modules live in
 `src/routes/`.

@@ -11,7 +11,7 @@ type CreateTipInput = { eventId: string; amountMinor: number; message?: string }
  */
 export const createTipIntent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: CreateTipInput) => {
+  .validator((input: CreateTipInput) => {
     if (!input || typeof input.eventId !== "string") throw new Error("An event is required.");
     const amount = Math.round(Number(input.amountMinor));
     if (!Number.isFinite(amount) || amount < 100 || amount > 100_000_00) {
@@ -74,6 +74,7 @@ export const createTipIntent = createServerFn({ method: "POST" })
       "line_items[0][price_data][product_data][name]": "Accountabul live tip",
       "line_items[0][quantity]": "1",
       "metadata[tip_id]": tip.id,
+      "payment_intent_data[metadata][tip_id]": tip.id,
       client_reference_id: tip.id,
       success_url: `${process.env["PUBLIC_SITE_URL"] ?? ""}/live?tip=success`,
       cancel_url: `${process.env["PUBLIC_SITE_URL"] ?? ""}/live?tip=canceled`,
@@ -88,7 +89,11 @@ export const createTipIntent = createServerFn({ method: "POST" })
       },
       body,
     });
-    const session = (await response.json()) as { url?: string; id?: string; error?: { message: string } };
+    const session = (await response.json()) as {
+      url?: string;
+      id?: string;
+      error?: { message: string };
+    };
     if (!response.ok) throw new Error(session.error?.message ?? "Checkout could not be started.");
 
     await supabaseAdmin

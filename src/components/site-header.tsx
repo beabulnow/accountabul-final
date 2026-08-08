@@ -117,18 +117,16 @@ export function SiteHeader() {
                     { to: "/login", label: "Log in" },
                     { to: "/signup", label: "Get started" },
                   ]),
-            ].map(
-              (item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-3 text-sm text-foreground transition-colors hover:bg-secondary"
-                >
-                  {item.label}
-                </Link>
-              ),
-            )}
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-3 text-sm text-foreground transition-colors hover:bg-secondary"
+              >
+                {item.label}
+              </Link>
+            ))}
             {session ? (
               <button
                 type="button"

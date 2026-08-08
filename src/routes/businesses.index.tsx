@@ -10,7 +10,10 @@ export const Route = createFileRoute("/businesses/")({
   head: () => ({
     meta: [
       { title: "Business directory — Accountabul" },
-      { name: "description", content: "Search accountable businesses, services, and verified credentials." },
+      {
+        name: "description",
+        content: "Search accountable businesses, services, and verified credentials.",
+      },
       { property: "og:title", content: "Business directory — Accountabul" },
       {
         property: "og:description",

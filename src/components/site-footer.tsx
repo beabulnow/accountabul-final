@@ -41,21 +41,15 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border py-6">
         <p className="container-page text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Accountabul. Phase 0 foundation build — routes are shells
-          pending phased delivery.
+          © {new Date().getFullYear()} Accountabul. Accountable property, business, and live
+          experiences in one platform.
         </p>
       </div>
     </footer>
   );
 }
 
-function FooterCol({
-  title,
-  links,
-}: {
-  title: string;
-  links: FooterLink[];
-}) {
+function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
       <p className="text-sm font-semibold">{title}</p>

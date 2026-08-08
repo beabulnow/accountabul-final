@@ -11,12 +11,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime, formatMoney, uniqueSlug } from "@/lib/format";
 import { SignedOut } from "./dashboard.profile";
 
-
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin — Accountabul" },
-      { name: "description", content: "Review business submissions, credentials, and verification decisions." },
+      {
+        name: "description",
+        content: "Review business submissions, credentials, and verification decisions.",
+      },
       { property: "og:title", content: "Admin — Accountabul" },
       {
         property: "og:description",
@@ -111,7 +113,10 @@ function AdminPage() {
     >
       <div className="grid gap-3">
         {(queue.data ?? []).map((b) => (
-          <div key={b.id} className="surface-card flex flex-wrap items-center justify-between gap-3 p-4">
+          <div
+            key={b.id}
+            className="surface-card flex flex-wrap items-center justify-between gap-3 p-4"
+          >
             <div>
               <p className="font-medium">{b.display_name}</p>
               <p className="text-xs text-muted-foreground">
@@ -154,7 +159,15 @@ function AdminPage() {
   );
 }
 
-function SectionCard({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+function SectionCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="surface-card mt-8 p-6">
       <h2 className="text-lg font-semibold">{title}</h2>
@@ -201,23 +214,41 @@ function ListingQueue({ isAdmin }: { isAdmin: boolean }) {
   });
 
   return (
-    <SectionCard title="Listing review" description="Listings submitted by businesses. Only published listings appear in the marketplace.">
+    <SectionCard
+      title="Listing review"
+      description="Listings submitted by businesses. Only published listings appear in the marketplace."
+    >
       <ul className="space-y-3">
-        {listings.data?.length === 0 ? <li className="text-sm text-muted-foreground">Nothing waiting for review.</li> : null}
+        {listings.data?.length === 0 ? (
+          <li className="text-sm text-muted-foreground">Nothing waiting for review.</li>
+        ) : null}
         {listings.data?.map((p) => (
-          <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-4">
+          <li
+            key={p.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-4"
+          >
             <div>
               <p className="font-medium">{p.title}</p>
               <p className="text-xs text-muted-foreground">
-                {p.businesses?.display_name ?? "Unknown business"} · {p.address_city ?? "No city"} · {p.status}
+                {p.businesses?.display_name ?? "Unknown business"} · {p.address_city ?? "No city"} ·{" "}
+                {p.status}
               </p>
             </div>
             {isAdmin ? (
               <div className="flex gap-2">
-                <Button size="sm" disabled={decide.isPending} onClick={() => decide.mutate({ id: p.id, approve: true })}>
+                <Button
+                  size="sm"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ id: p.id, approve: true })}
+                >
                   Publish
                 </Button>
-                <Button size="sm" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ id: p.id, approve: false })}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ id: p.id, approve: false })}
+                >
                   Reject
                 </Button>
               </div>
@@ -233,7 +264,12 @@ function ListingQueue({ isAdmin }: { isAdmin: boolean }) {
 
 function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
   const queryClient = useQueryClient();
-  const [draft, setDraft] = useState({ title: "", scheduled_start_at: "", embed_url: "", description: "" });
+  const [draft, setDraft] = useState({
+    title: "",
+    scheduled_start_at: "",
+    embed_url: "",
+    description: "",
+  });
 
   const events = useQuery({
     queryKey: ["admin-events"],
@@ -255,7 +291,9 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
         slug: uniqueSlug(draft.title),
         title: draft.title.trim(),
         description: draft.description.trim() || null,
-        scheduled_start_at: draft.scheduled_start_at ? new Date(draft.scheduled_start_at).toISOString() : null,
+        scheduled_start_at: draft.scheduled_start_at
+          ? new Date(draft.scheduled_start_at).toISOString()
+          : null,
         embed_url: draft.embed_url.trim() || null,
         status: "scheduled",
       });
@@ -270,8 +308,16 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
   });
 
   const setStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "scheduled" | "live" | "ended" | "replay_available" | "canceled" }) => {
-      const patch: { status: typeof status; actual_start_at?: string; ended_at?: string } = { status };
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: "scheduled" | "live" | "ended" | "replay_available" | "canceled";
+    }) => {
+      const patch: { status: typeof status; actual_start_at?: string; ended_at?: string } = {
+        status,
+      };
       if (status === "live") patch.actual_start_at = new Date().toISOString();
       if (status === "ended") patch.ended_at = new Date().toISOString();
       const { error } = await supabase.from("events").update(patch).eq("id", id);
@@ -286,7 +332,10 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
   });
 
   return (
-    <SectionCard title="Conference rooms" description="Schedule rooms, flip them live, and publish replays.">
+    <SectionCard
+      title="Conference rooms"
+      description="Schedule rooms, flip them live, and publish replays."
+    >
       {isAdmin ? (
         <form
           className="grid gap-3 sm:grid-cols-2"
@@ -295,10 +344,30 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
             createEvent.mutate();
           }}
         >
-          <Input placeholder="Room title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} aria-label="Room title" />
-          <Input type="datetime-local" value={draft.scheduled_start_at} onChange={(e) => setDraft({ ...draft, scheduled_start_at: e.target.value })} aria-label="Scheduled start" />
-          <Input placeholder="Player embed URL" value={draft.embed_url} onChange={(e) => setDraft({ ...draft, embed_url: e.target.value })} aria-label="Embed URL" />
-          <Input placeholder="Short description" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} aria-label="Description" />
+          <Input
+            placeholder="Room title"
+            value={draft.title}
+            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            aria-label="Room title"
+          />
+          <Input
+            type="datetime-local"
+            value={draft.scheduled_start_at}
+            onChange={(e) => setDraft({ ...draft, scheduled_start_at: e.target.value })}
+            aria-label="Scheduled start"
+          />
+          <Input
+            placeholder="Player embed URL"
+            value={draft.embed_url}
+            onChange={(e) => setDraft({ ...draft, embed_url: e.target.value })}
+            aria-label="Embed URL"
+          />
+          <Input
+            placeholder="Short description"
+            value={draft.description}
+            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            aria-label="Description"
+          />
           <div>
             <Button type="submit" disabled={createEvent.isPending}>
               Schedule room
@@ -308,9 +377,14 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
       ) : null}
 
       <ul className="mt-5 space-y-3">
-        {events.data?.length === 0 ? <li className="text-sm text-muted-foreground">No rooms yet.</li> : null}
+        {events.data?.length === 0 ? (
+          <li className="text-sm text-muted-foreground">No rooms yet.</li>
+        ) : null}
         {events.data?.map((ev) => (
-          <li key={ev.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-4">
+          <li
+            key={ev.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-4"
+          >
             <div>
               <p className="font-medium">{ev.title}</p>
               <p className="text-xs text-muted-foreground">
@@ -319,11 +393,18 @@ function EventsAdmin({ isAdmin }: { isAdmin: boolean }) {
             </div>
             {isAdmin ? (
               <div className="flex flex-wrap gap-2">
-                {(["scheduled", "live", "ended", "replay_available", "canceled"] as const).map((s) => (
-                  <Button key={s} size="sm" variant={ev.status === s ? "secondary" : "ghost"} onClick={() => setStatus.mutate({ id: ev.id, status: s })}>
-                    {s.replace("_", " ")}
-                  </Button>
-                ))}
+                {(["scheduled", "live", "ended", "replay_available", "canceled"] as const).map(
+                  (s) => (
+                    <Button
+                      key={s}
+                      size="sm"
+                      variant={ev.status === s ? "secondary" : "ghost"}
+                      onClick={() => setStatus.mutate({ id: ev.id, status: s })}
+                    >
+                      {s.replace("_", " ")}
+                    </Button>
+                  ),
+                )}
               </div>
             ) : null}
           </li>
@@ -340,7 +421,9 @@ function TipsReconciliation({ isAdmin }: { isAdmin: boolean }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tips")
-        .select("id, amount_minor, currency, status, provider, provider_record_id, created_at, paid_at")
+        .select(
+          "id, amount_minor, currency, status, provider, provider_record_id, created_at, paid_at",
+        )
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -354,14 +437,23 @@ function TipsReconciliation({ isAdmin }: { isAdmin: boolean }) {
   const total = paid.reduce((sum, t) => sum + Number(t.amount_minor), 0);
 
   return (
-    <SectionCard title="Tip reconciliation" description="Provider-confirmed tips only. Client redirects never change tip status.">
+    <SectionCard
+      title="Tip reconciliation"
+      description="Provider-confirmed tips only. Client redirects never change tip status."
+    >
       <p className="text-sm">
-        Paid tips: <strong>{paid.length}</strong> · Total confirmed: <strong>{formatMoney(total)}</strong>
+        Paid tips: <strong>{paid.length}</strong> · Total confirmed:{" "}
+        <strong>{formatMoney(total)}</strong>
       </p>
       <ul className="mt-4 space-y-2">
-        {tips.data?.length === 0 ? <li className="text-sm text-muted-foreground">No tips recorded yet.</li> : null}
+        {tips.data?.length === 0 ? (
+          <li className="text-sm text-muted-foreground">No tips recorded yet.</li>
+        ) : null}
         {tips.data?.map((t) => (
-          <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm">
+          <li
+            key={t.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm"
+          >
             <span>{formatMoney(Number(t.amount_minor), t.currency)}</span>
             <span className="text-xs text-muted-foreground">
               {t.status} · {t.provider ?? "no provider"} · {formatDateTime(t.created_at)}
@@ -379,8 +471,16 @@ function OperationsLog({ isAdmin }: { isAdmin: boolean }) {
     enabled: isAdmin,
     queryFn: async () => {
       const [log, batches] = await Promise.all([
-        supabase.from("audit_log").select("id, action, target_table, created_at").order("created_at", { ascending: false }).limit(25),
-        supabase.from("migration_batches").select("id, source_system, status, dry_run, started_at, finished_at").order("started_at", { ascending: false }).limit(10),
+        supabase
+          .from("audit_log")
+          .select("id, action, target_table, created_at")
+          .order("created_at", { ascending: false })
+          .limit(25),
+        supabase
+          .from("migration_batches")
+          .select("id, source_system, status, dry_run, started_at, finished_at")
+          .order("started_at", { ascending: false })
+          .limit(10),
       ]);
       if (log.error) throw log.error;
       if (batches.error) throw batches.error;
@@ -391,12 +491,19 @@ function OperationsLog({ isAdmin }: { isAdmin: boolean }) {
   if (!isAdmin) return null;
 
   return (
-    <SectionCard title="Operations" description="Audit history and migration batches. Imports are idempotent and always dry-run first.">
+    <SectionCard
+      title="Operations"
+      description="Audit history and migration batches. Imports are idempotent and always dry-run first."
+    >
       <div className="grid gap-6 md:grid-cols-2">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Recent audit entries</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Recent audit entries
+          </h3>
           <ul className="mt-3 space-y-2 text-sm">
-            {audit.data?.log.length === 0 ? <li className="text-muted-foreground">No audit entries yet.</li> : null}
+            {audit.data?.log.length === 0 ? (
+              <li className="text-muted-foreground">No audit entries yet.</li>
+            ) : null}
             {audit.data?.log.map((row) => (
               <li key={row.id} className="rounded-md border border-border p-3">
                 <span className="font-medium">{row.action}</span>{" "}
@@ -408,9 +515,13 @@ function OperationsLog({ isAdmin }: { isAdmin: boolean }) {
           </ul>
         </div>
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Migration batches</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Migration batches
+          </h3>
           <ul className="mt-3 space-y-2 text-sm">
-            {audit.data?.batches.length === 0 ? <li className="text-muted-foreground">No import batches recorded.</li> : null}
+            {audit.data?.batches.length === 0 ? (
+              <li className="text-muted-foreground">No import batches recorded.</li>
+            ) : null}
             {audit.data?.batches.map((b) => (
               <li key={b.id} className="rounded-md border border-border p-3">
                 <span className="font-medium">{b.source_system}</span>{" "}
@@ -425,4 +536,3 @@ function OperationsLog({ isAdmin }: { isAdmin: boolean }) {
     </SectionCard>
   );
 }
-

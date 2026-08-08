@@ -11,7 +11,10 @@ export const Route = createFileRoute("/dashboard/")({
       { title: "Dashboard — Accountabul" },
       { name: "description", content: "Your personalized Accountabul summary and next actions." },
       { property: "og:title", content: "Dashboard — Accountabul" },
-      { property: "og:description", content: "Your personalized Accountabul summary and next actions." },
+      {
+        property: "og:description",
+        content: "Your personalized Accountabul summary and next actions.",
+      },
     ],
   }),
   component: DashboardHome,
@@ -97,7 +100,6 @@ function DashboardHome() {
           to="/businesses"
           cta="Open directory"
         />
-
       </div>
     </div>
   );

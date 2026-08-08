@@ -13,9 +13,15 @@ export const Route = createFileRoute("/dashboard/profile")({
   head: () => ({
     meta: [
       { title: "Your profile — Accountabul dashboard" },
-      { name: "description", content: "Update your Accountabul member profile and contact details." },
+      {
+        name: "description",
+        content: "Update your Accountabul member profile and contact details.",
+      },
       { property: "og:title", content: "Your profile — Accountabul dashboard" },
-      { property: "og:description", content: "Update your Accountabul member profile and contact details." },
+      {
+        property: "og:description",
+        content: "Update your Accountabul member profile and contact details.",
+      },
     ],
   }),
   component: ProfilePage,
@@ -83,15 +89,35 @@ function ProfilePage() {
         }}
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="First name" value={form.first_name} onChange={(v) => setForm({ ...form, first_name: v })} />
-          <Field label="Last name" value={form.last_name} onChange={(v) => setForm({ ...form, last_name: v })} />
+          <Field
+            label="First name"
+            value={form.first_name}
+            onChange={(v) => setForm({ ...form, first_name: v })}
+          />
+          <Field
+            label="Last name"
+            value={form.last_name}
+            onChange={(v) => setForm({ ...form, last_name: v })}
+          />
         </div>
-        <Field label="Display name" value={form.display_name} onChange={(v) => setForm({ ...form, display_name: v })} />
+        <Field
+          label="Display name"
+          value={form.display_name}
+          onChange={(v) => setForm({ ...form, display_name: v })}
+        />
         <Field label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="City" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
-          <Field label="State" value={form.state} onChange={(v) => setForm({ ...form, state: v })} />
-          <Field label="Country" value={form.country} onChange={(v) => setForm({ ...form, country: v })} />
+          <Field
+            label="State"
+            value={form.state}
+            onChange={(v) => setForm({ ...form, state: v })}
+          />
+          <Field
+            label="Country"
+            value={form.country}
+            onChange={(v) => setForm({ ...form, country: v })}
+          />
         </div>
         <div>
           <Button type="submit" disabled={save.isPending || isLoading}>
@@ -125,9 +151,7 @@ export function SignedOut() {
   return (
     <div className="surface-card max-w-md p-6">
       <h2 className="text-lg font-semibold">Sign in required</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        This area is private to your account.
-      </p>
+      <p className="mt-2 text-sm text-muted-foreground">This area is private to your account.</p>
       <Link
         to="/login"
         className="mt-4 inline-flex rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"

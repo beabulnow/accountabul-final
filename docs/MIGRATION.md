@@ -11,7 +11,7 @@ schema (`docs/SCHEMA.md`) and threat model (`docs/RLS_THREAT_MODEL.md`) are sign
 1. Forward-only, committed to source control, applied through the migration tool.
 2. No dashboard-only schema changes.
 3. Each `CREATE TABLE public.x` includes, in order: table, `GRANT`s, `ENABLE ROW LEVEL
-   SECURITY`, policies.
+SECURITY`, policies.
 4. Destructive statements (`DROP`, destructive `ALTER`, data-losing type changes) require
    a written plan, an approved backup, and a rollback runbook before execution.
 5. Data changes (`INSERT`/`UPDATE`/`DELETE`) never travel in schema migrations, except

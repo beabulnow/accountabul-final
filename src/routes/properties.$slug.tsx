@@ -16,9 +16,15 @@ export const Route = createFileRoute("/properties/$slug")({
   head: ({ params }) => ({
     meta: [
       { title: `Listing ${params.slug} — Accountabul` },
-      { name: "description", content: "Full listing detail, media, and a direct inquiry path to the listing business." },
+      {
+        name: "description",
+        content: "Full listing detail, media, and a direct inquiry path to the listing business.",
+      },
       { property: "og:title", content: `Listing ${params.slug} — Accountabul` },
-      { property: "og:description", content: "Full listing detail, media, and a direct inquiry path to the listing business." },
+      {
+        property: "og:description",
+        content: "Full listing detail, media, and a direct inquiry path to the listing business.",
+      },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -73,7 +79,9 @@ function PropertyPage() {
         if (error) throw error;
         return false;
       }
-      const { error } = await supabase.from("saved_properties").insert({ user_id: userId, property_id: p.id });
+      const { error } = await supabase
+        .from("saved_properties")
+        .insert({ user_id: userId, property_id: p.id });
       if (error) throw error;
       return true;
     },
@@ -108,7 +116,10 @@ function PropertyPage() {
     <PageShell
       eyebrow={p.property_type ?? "Property"}
       title={p.title}
-      description={locationLabel([p.address_city, p.address_state, p.address_country]) || "Location shared on request"}
+      description={
+        locationLabel([p.address_city, p.address_state, p.address_country]) ||
+        "Location shared on request"
+      }
     >
       <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-6">
@@ -137,7 +148,9 @@ function PropertyPage() {
           ) : null}
 
           <section className="surface-card p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Details</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Details
+            </h2>
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed">
               {p.description ?? "This business has not added a description yet."}
             </p>
@@ -153,9 +166,15 @@ function PropertyPage() {
         <aside className="space-y-4">
           <div className="surface-card p-6">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Listed by</p>
-            <p className="mt-1 font-semibold">{p.businesses?.display_name ?? "Accountabul business"}</p>
+            <p className="mt-1 font-semibold">
+              {p.businesses?.display_name ?? "Accountabul business"}
+            </p>
             {p.businesses?.slug ? (
-              <Link to="/businesses/$slug" params={{ slug: p.businesses.slug }} className="mt-1 inline-block text-sm text-accent underline">
+              <Link
+                to="/businesses/$slug"
+                params={{ slug: p.businesses.slug }}
+                className="mt-1 inline-block text-sm text-accent underline"
+              >
                 View business profile
               </Link>
             ) : null}
@@ -197,7 +216,12 @@ function Fact({ label, value }: { label: string; value: string }) {
 function InquiryForm({ propertyId, businessId }: { propertyId: string; businessId: string }) {
   const { session } = useSession();
   const userId = session?.user.id;
-  const [form, setForm] = useState({ contact_name: "", contact_email: "", contact_phone: "", message: "" });
+  const [form, setForm] = useState({
+    contact_name: "",
+    contact_email: "",
+    contact_phone: "",
+    message: "",
+  });
   const [sent, setSent] = useState(false);
 
   const submit = useMutation({
@@ -246,24 +270,44 @@ function InquiryForm({ propertyId, businessId }: { propertyId: string; businessI
       <h2 className="font-semibold">Contact the business</h2>
       <div>
         <Label htmlFor="contact_name">Your name</Label>
-        <Input id="contact_name" value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} />
+        <Input
+          id="contact_name"
+          value={form.contact_name}
+          onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+        />
       </div>
       <div>
         <Label htmlFor="contact_email">Email</Label>
-        <Input id="contact_email" type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} />
+        <Input
+          id="contact_email"
+          type="email"
+          value={form.contact_email}
+          onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
+        />
       </div>
       <div>
         <Label htmlFor="contact_phone">Phone (optional)</Label>
-        <Input id="contact_phone" value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
+        <Input
+          id="contact_phone"
+          value={form.contact_phone}
+          onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+        />
       </div>
       <div>
         <Label htmlFor="message">Message</Label>
-        <Textarea id="message" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+        <Textarea
+          id="message"
+          rows={4}
+          value={form.message}
+          onChange={(e) => setForm({ ...form, message: e.target.value })}
+        />
       </div>
       <Button type="submit" className="w-full" disabled={!userId || submit.isPending}>
         {submit.isPending ? "Sending…" : "Send inquiry"}
       </Button>
-      {!userId ? <p className="text-xs text-muted-foreground">Sign in to send this inquiry.</p> : null}
+      {!userId ? (
+        <p className="text-xs text-muted-foreground">Sign in to send this inquiry.</p>
+      ) : null}
     </form>
   );
 }

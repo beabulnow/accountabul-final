@@ -33,9 +33,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, [queryClient]);
 
-  return (
-    <SessionContext.Provider value={{ session, loading }}>{children}</SessionContext.Provider>
-  );
+  return <SessionContext.Provider value={{ session, loading }}>{children}</SessionContext.Provider>;
 }
 
 export function useSession() {

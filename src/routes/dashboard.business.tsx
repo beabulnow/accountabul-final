@@ -16,7 +16,10 @@ export const Route = createFileRoute("/dashboard/business")({
   head: () => ({
     meta: [
       { title: "Your business — Accountabul dashboard" },
-      { name: "description", content: "Create, edit, and submit your Accountabul business profile for verification." },
+      {
+        name: "description",
+        content: "Create, edit, and submit your Accountabul business profile for verification.",
+      },
       { property: "og:title", content: "Your business — Accountabul dashboard" },
       {
         property: "og:description",
@@ -150,10 +153,24 @@ function BusinessPage() {
         }}
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Legal name" required value={form.legal_name} onChange={(v) => setForm({ ...form, legal_name: v })} />
-          <Field label="Display name" required value={form.display_name} onChange={(v) => setForm({ ...form, display_name: v })} />
+          <Field
+            label="Legal name"
+            required
+            value={form.legal_name}
+            onChange={(v) => setForm({ ...form, legal_name: v })}
+          />
+          <Field
+            label="Display name"
+            required
+            value={form.display_name}
+            onChange={(v) => setForm({ ...form, display_name: v })}
+          />
         </div>
-        <Field label="Headline" value={form.headline} onChange={(v) => setForm({ ...form, headline: v })} />
+        <Field
+          label="Headline"
+          value={form.headline}
+          onChange={(v) => setForm({ ...form, headline: v })}
+        />
         <div className="grid gap-2">
           <Label htmlFor="description">Description</Label>
           <Textarea
@@ -164,15 +181,43 @@ function BusinessPage() {
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Website" value={form.website_url} onChange={(v) => setForm({ ...form, website_url: v })} />
-          <Field label="Public email" value={form.public_email} onChange={(v) => setForm({ ...form, public_email: v })} />
-          <Field label="Public phone" value={form.public_phone} onChange={(v) => setForm({ ...form, public_phone: v })} />
+          <Field
+            label="Website"
+            value={form.website_url}
+            onChange={(v) => setForm({ ...form, website_url: v })}
+          />
+          <Field
+            label="Public email"
+            value={form.public_email}
+            onChange={(v) => setForm({ ...form, public_email: v })}
+          />
+          <Field
+            label="Public phone"
+            value={form.public_phone}
+            onChange={(v) => setForm({ ...form, public_phone: v })}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-4">
-          <Field label="Industry" value={form.primary_industry} onChange={(v) => setForm({ ...form, primary_industry: v })} />
-          <Field label="City" value={form.address_city} onChange={(v) => setForm({ ...form, address_city: v })} />
-          <Field label="State" value={form.address_state} onChange={(v) => setForm({ ...form, address_state: v })} />
-          <Field label="Country" value={form.address_country} onChange={(v) => setForm({ ...form, address_country: v })} />
+          <Field
+            label="Industry"
+            value={form.primary_industry}
+            onChange={(v) => setForm({ ...form, primary_industry: v })}
+          />
+          <Field
+            label="City"
+            value={form.address_city}
+            onChange={(v) => setForm({ ...form, address_city: v })}
+          />
+          <Field
+            label="State"
+            value={form.address_state}
+            onChange={(v) => setForm({ ...form, address_state: v })}
+          />
+          <Field
+            label="Country"
+            value={form.address_country}
+            onChange={(v) => setForm({ ...form, address_country: v })}
+          />
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={create.isPending || update.isPending}>
@@ -182,7 +227,9 @@ function BusinessPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => update.mutate({ profile_status: "pending_review", verification_status: "pending" })}
+              onClick={() =>
+                update.mutate({ profile_status: "pending_review", verification_status: "pending" })
+              }
             >
               Submit for review
             </Button>
@@ -238,12 +285,16 @@ function CredentialsPanel({ businessId }: { businessId: string }) {
     <section className="surface-card mt-6 p-6">
       <h2 className="text-lg font-semibold">Verification credentials</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Private to your business and platform admins. Never shown publicly unless an admin approves display.
+        Private to your business and platform admins. Never shown publicly unless an admin approves
+        display.
       </p>
 
       <ul className="mt-4 grid gap-2">
         {(credentials.data ?? []).map((c) => (
-          <li key={c.id} className="flex flex-wrap justify-between gap-2 rounded-md border border-border p-3 text-sm">
+          <li
+            key={c.id}
+            className="flex flex-wrap justify-between gap-2 rounded-md border border-border p-3 text-sm"
+          >
             <span>
               {c.credential_type}
               {c.issuing_authority ? ` · ${c.issuing_authority}` : ""}

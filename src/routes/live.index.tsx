@@ -9,9 +9,17 @@ export const Route = createFileRoute("/live/")({
   head: () => ({
     meta: [
       { title: "Live events — Accountabul" },
-      { name: "description", content: "Join the current Accountabul live conference room, see scheduled events, and watch replays." },
+      {
+        name: "description",
+        content:
+          "Join the current Accountabul live conference room, see scheduled events, and watch replays.",
+      },
       { property: "og:title", content: "Live events — Accountabul" },
-      { property: "og:description", content: "Join the current Accountabul live conference room, see scheduled events, and watch replays." },
+      {
+        property: "og:description",
+        content:
+          "Join the current Accountabul live conference room, see scheduled events, and watch replays.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -48,12 +56,15 @@ function LivePage() {
       audience="Public"
       phase="Phase 3"
     >
-      {events.isLoading ? <p className="text-sm text-muted-foreground">Loading the schedule…</p> : null}
+      {events.isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading the schedule…</p>
+      ) : null}
       {!events.isLoading && all.length === 0 ? (
         <div className="surface-card p-6">
           <h2 className="font-semibold">No events scheduled yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            When a room is scheduled it appears here with a reminder option, and switches to the live player automatically.
+            When a room is scheduled it appears here with a reminder option, and switches to the
+            live player automatically.
           </p>
         </div>
       ) : null}
@@ -78,7 +89,9 @@ type EventRow = {
 function Section({ title, empty, events }: { title: string; empty: string; events: EventRow[] }) {
   return (
     <section className="mt-10">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h2>
       {events.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">{empty}</p>
       ) : (
@@ -90,9 +103,13 @@ function Section({ title, empty, events }: { title: string; empty: string; event
               params={{ slug: e.slug }}
               className="surface-card p-5 transition-colors hover:border-accent"
             >
-              <span className="text-xs uppercase tracking-wide text-accent">{e.status.replace("_", " ")}</span>
+              <span className="text-xs uppercase tracking-wide text-accent">
+                {e.status.replace("_", " ")}
+              </span>
               <h3 className="mt-1 font-semibold">{e.title}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(e.scheduled_start_at)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {formatDateTime(e.scheduled_start_at)}
+              </p>
               {e.description ? (
                 <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{e.description}</p>
               ) : null}

@@ -22,10 +22,10 @@ export const Route = createFileRoute("/login")({
       },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
-    typeof search["redirect"] === "string"
-      ? { redirect: search["redirect"] as string }
-      : {},
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; mode?: "recovery" } => ({
+    ...(typeof search["redirect"] === "string" ? { redirect: search["redirect"] as string } : {}),
+    ...(search["mode"] === "recovery" ? { mode: "recovery" as const } : {}),
+  }),
 
   component: LoginPage,
 });
@@ -35,18 +35,21 @@ function safePath(value: string | undefined) {
 }
 
 function LoginPage() {
-  const { session } = useSession();
+  const { session, loading } = useSession();
   const navigate = useNavigate();
   const search = useSearch({ from: "/login" });
   const next = safePath(search.redirect);
+  const isRecovery = search.mode === "recovery";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (session) void navigate({ to: next, replace: true });
-  }, [session, navigate, next]);
+    if (session && !isRecovery) void navigate({ to: next, replace: true });
+  }, [session, isRecovery, navigate, next]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -81,10 +84,92 @@ function LoginPage() {
       return;
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}/login?mode=recovery`,
     });
     if (error) toast.error(error.message);
     else toast.success("If that account exists, a reset link is on the way.");
+  }
+
+  async function handlePasswordUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error("Use at least 8 characters for your new password.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("The passwords do not match.");
+      return;
+    }
+
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (!error) await supabase.auth.signOut();
+    setBusy(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Password updated. Log in with your new password.");
+    void navigate({ to: "/login", search: {}, replace: true });
+  }
+
+  if (isRecovery) {
+    return (
+      <PageShell
+        eyebrow="Account recovery"
+        title="Choose a new password"
+        description="Finish recovering your account with a new password."
+        audience="Public"
+        phase="Phase 1"
+      >
+        <div className="surface-card max-w-md p-6">
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Verifying your reset link…</p>
+          ) : session ? (
+            <form onSubmit={handlePasswordUpdate} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="new-password">New password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  minLength={8}
+                  autoComplete="new-password"
+                  required
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirm-password">Confirm new password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  minLength={8}
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                />
+              </div>
+              <Button type="submit" disabled={busy}>
+                {busy ? "Updating password…" : "Update password"}
+              </Button>
+            </form>
+          ) : (
+            <div className="grid gap-4 text-sm">
+              <p className="text-muted-foreground">
+                This reset link is invalid or expired. Request a new link from the login page.
+              </p>
+              <Button asChild>
+                <Link to="/login">Return to login</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </PageShell>
+    );
   }
 
   return (

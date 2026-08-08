@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import {
+  getStripeTipId,
+  parseStripeEvent,
+  planTipTransition,
+  verifyStripeSignature,
+  type TipForReconciliation,
+} from "@/lib/stripe-webhook";
+
 /**
  * Stripe webhook. Reconciliation happens here and nowhere else: a client
  * redirect can never mark a tip paid. Repeated deliveries are idempotent
@@ -18,11 +26,12 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
           return new Response("Invalid signature", { status: 401 });
         }
 
-        const event = JSON.parse(rawBody) as {
-          id: string;
-          type: string;
-          data: { object: Record<string, unknown> };
-        };
+        let event;
+        try {
+          event = parseStripeEvent(rawBody);
+        } catch {
+          return new Response("Invalid event", { status: 400 });
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -32,71 +41,70 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
           event_type: event.type,
           payload: { type: event.type },
         });
-        // Duplicate delivery: already reconciled, acknowledge and stop.
-        if (ledgerError && ledgerError.code === "23505") return new Response("ok");
-        if (ledgerError) throw ledgerError;
+        if (ledgerError?.code === "23505") {
+          const { data: existing, error: existingError } = await supabaseAdmin
+            .from("payment_events")
+            .select("processed_at")
+            .eq("provider", "stripe")
+            .eq("provider_event_id", event.id)
+            .single();
+          if (existingError) throw existingError;
+          // Only completed events are duplicates. An unprocessed event must retry.
+          if (existing.processed_at) return new Response("ok");
+        }
+        if (ledgerError && ledgerError.code !== "23505") throw ledgerError;
 
-        const object = event.data.object;
-        const tipId = (object["client_reference_id"] as string | undefined) ??
-          ((object["metadata"] as Record<string, string> | undefined)?.["tip_id"]);
+        const tipId = getStripeTipId(event);
 
         if (tipId) {
-          const status =
-            event.type === "checkout.session.completed"
-              ? "paid"
-              : event.type.startsWith("charge.refunded")
-                ? "refunded"
-                : event.type.includes("failed")
-                  ? "failed"
-                  : null;
+          const { data: tip, error: tipError } = await supabaseAdmin
+            .from("tips")
+            .select("id, amount_minor, currency, provider_record_id, status")
+            .eq("id", tipId)
+            .single();
+          if (tipError) throw tipError;
 
-          if (status) {
-            await supabaseAdmin
+          const transition = planTipTransition(event, tip as TipForReconciliation);
+          if (transition) {
+            const patch =
+              transition.status === "paid"
+                ? { status: transition.status, paid_at: new Date().toISOString() }
+                : { status: transition.status };
+            const { data: updated, error: updateError } = await supabaseAdmin
               .from("tips")
-              .update({ status, paid_at: status === "paid" ? new Date().toISOString() : null })
-              .eq("id", tipId);
-            await supabaseAdmin
-              .from("payment_events")
-              .update({ tip_id: tipId, processed_at: new Date().toISOString() })
-              .eq("provider", "stripe")
-              .eq("provider_event_id", event.id);
+              .update(patch)
+              .eq("id", tipId)
+              .in("status", transition.allowedCurrentStatuses)
+              .select("id")
+              .maybeSingle();
+            if (updateError) throw updateError;
+
+            if (!updated) {
+              const { data: current, error: currentError } = await supabaseAdmin
+                .from("tips")
+                .select("status")
+                .eq("id", tipId)
+                .single();
+              if (currentError) throw currentError;
+              const supersededByTerminalStatus =
+                current.status === "refunded" ||
+                (transition.status === "failed" && current.status === "paid");
+              if (current.status !== transition.status && !supersededByTerminalStatus) {
+                throw new Error("Tip status changed during Stripe reconciliation.");
+              }
+            }
           }
         }
+
+        const { error: processedError } = await supabaseAdmin
+          .from("payment_events")
+          .update({ tip_id: tipId, processed_at: new Date().toISOString() })
+          .eq("provider", "stripe")
+          .eq("provider_event_id", event.id);
+        if (processedError) throw processedError;
 
         return new Response("ok");
       },
     },
   },
 });
-
-async function verifyStripeSignature(payload: string, header: string, secret: string) {
-  const parts = Object.fromEntries(
-    header.split(",").map((part) => {
-      const [key, value] = part.split("=");
-      return [key?.trim() ?? "", value ?? ""];
-    }),
-  );
-  const timestamp = parts["t"];
-  const signature = parts["v1"];
-  if (!timestamp || !signature) return false;
-
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const digest = await crypto.subtle.sign("HMAC", key, encoder.encode(`${timestamp}.${payload}`));
-  const expected = Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  if (expected.length !== signature.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < expected.length; i += 1) {
-    mismatch |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
-  }
-  return mismatch === 0;
-}

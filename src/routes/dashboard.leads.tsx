@@ -13,9 +13,15 @@ export const Route = createFileRoute("/dashboard/leads")({
   head: () => ({
     meta: [
       { title: "Leads — Accountabul dashboard" },
-      { name: "description", content: "Property and service inquiries sent to your business, with status tracking." },
+      {
+        name: "description",
+        content: "Property and service inquiries sent to your business, with status tracking.",
+      },
       { property: "og:title", content: "Leads — Accountabul dashboard" },
-      { property: "og:description", content: "Property and service inquiries sent to your business, with status tracking." },
+      {
+        property: "og:description",
+        content: "Property and service inquiries sent to your business, with status tracking.",
+      },
     ],
   }),
   component: LeadsDashboard,
@@ -38,26 +44,46 @@ function LeadsDashboard() {
       const [propertyLeads, serviceLeads] = await Promise.all([
         supabase
           .from("property_inquiries")
-          .select("id, contact_name, contact_email, contact_phone, message, status, created_at, properties(title, slug)")
+          .select(
+            "id, contact_name, contact_email, contact_phone, message, status, created_at, properties(title, slug)",
+          )
           .eq("business_id", businessId!)
           .order("created_at", { ascending: false }),
         supabase
           .from("service_inquiries")
-          .select("id, contact_name, contact_email, contact_phone, message, status, created_at, services(name)")
+          .select(
+            "id, contact_name, contact_email, contact_phone, message, status, created_at, services(name)",
+          )
           .eq("business_id", businessId!)
           .order("created_at", { ascending: false }),
       ]);
       if (propertyLeads.error) throw propertyLeads.error;
       if (serviceLeads.error) throw serviceLeads.error;
       return [
-        ...(propertyLeads.data ?? []).map((l) => ({ ...l, table: "property_inquiries" as const, subject: l.properties?.title ?? "Listing" })),
-        ...(serviceLeads.data ?? []).map((l) => ({ ...l, table: "service_inquiries" as const, subject: l.services?.name ?? "Service" })),
+        ...(propertyLeads.data ?? []).map((l) => ({
+          ...l,
+          table: "property_inquiries" as const,
+          subject: l.properties?.title ?? "Listing",
+        })),
+        ...(serviceLeads.data ?? []).map((l) => ({
+          ...l,
+          table: "service_inquiries" as const,
+          subject: l.services?.name ?? "Service",
+        })),
       ].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
     },
   });
 
   const setStatus = useMutation({
-    mutationFn: async ({ table, id, status }: { table: "property_inquiries" | "service_inquiries"; id: string; status: LeadStatus }) => {
+    mutationFn: async ({
+      table,
+      id,
+      status,
+    }: {
+      table: "property_inquiries" | "service_inquiries";
+      id: string;
+      status: LeadStatus;
+    }) => {
       const { error } =
         table === "property_inquiries"
           ? await supabase.from("property_inquiries").update({ status }).eq("id", id)
@@ -78,7 +104,9 @@ function LeadsDashboard() {
     return (
       <div className="surface-card p-6">
         <h1 className="text-xl font-semibold">Leads need a business</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Inquiries arrive once your business has published listings or services.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Inquiries arrive once your business has published listings or services.
+        </p>
         <Link to="/dashboard/business" className="mt-4 inline-block text-sm text-accent underline">
           Go to business setup
         </Link>
@@ -95,20 +123,26 @@ function LeadsDashboard() {
 
       <ul className="mt-5 space-y-3">
         {leads.isLoading ? <li className="text-sm text-muted-foreground">Loading leads…</li> : null}
-        {leads.data?.length === 0 ? <li className="text-sm text-muted-foreground">No inquiries yet.</li> : null}
+        {leads.data?.length === 0 ? (
+          <li className="text-sm text-muted-foreground">No inquiries yet.</li>
+        ) : null}
         {leads.data?.map((lead) => (
           <li key={`${lead.table}-${lead.id}`} className="rounded-md border border-border p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="font-medium">
-                  {lead.contact_name} · <span className="text-muted-foreground">{lead.subject}</span>
+                  {lead.contact_name} ·{" "}
+                  <span className="text-muted-foreground">{lead.subject}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {lead.contact_email}
-                  {lead.contact_phone ? ` · ${lead.contact_phone}` : ""} · {formatDateTime(lead.created_at)}
+                  {lead.contact_phone ? ` · ${lead.contact_phone}` : ""} ·{" "}
+                  {formatDateTime(lead.created_at)}
                 </p>
               </div>
-              <span className="rounded-full border border-border px-3 py-1 text-xs capitalize">{lead.status}</span>
+              <span className="rounded-full border border-border px-3 py-1 text-xs capitalize">
+                {lead.status}
+              </span>
             </div>
             <p className="mt-3 whitespace-pre-line text-sm">{lead.message}</p>
             <div className="mt-3 flex flex-wrap gap-2">

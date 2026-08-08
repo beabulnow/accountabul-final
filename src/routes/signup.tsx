@@ -16,12 +16,14 @@ export const Route = createFileRoute("/signup")({
       { title: "Create your account — Accountabul" },
       {
         name: "description",
-        content: "Create an Accountabul member account to save listings, join live rooms, and claim a business.",
+        content:
+          "Create an Accountabul member account to save listings, join live rooms, and claim a business.",
       },
       { property: "og:title", content: "Create your account — Accountabul" },
       {
         property: "og:description",
-        content: "Create an Accountabul member account to save listings, join live rooms, and claim a business.",
+        content:
+          "Create an Accountabul member account to save listings, join live rooms, and claim a business.",
       },
     ],
   }),

@@ -11,9 +11,15 @@ export const Route = createFileRoute("/marketplace")({
   head: () => ({
     meta: [
       { title: "Marketplace — Accountabul" },
-      { name: "description", content: "Search and filter accountable real-estate listings on Accountabul." },
+      {
+        name: "description",
+        content: "Search and filter accountable real-estate listings on Accountabul.",
+      },
       { property: "og:title", content: "Marketplace — Accountabul" },
-      { property: "og:description", content: "Search and filter accountable real-estate listings on Accountabul." },
+      {
+        property: "og:description",
+        content: "Search and filter accountable real-estate listings on Accountabul.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -40,7 +46,9 @@ function MarketplacePage() {
 
       if (term.trim()) {
         const like = `%${term.trim()}%`;
-        query = query.or(`title.ilike.${like},description.ilike.${like},property_type.ilike.${like}`);
+        query = query.or(
+          `title.ilike.${like},description.ilike.${like},property_type.ilike.${like}`,
+        );
       }
       if (city.trim()) query = query.ilike("address_city", `%${city.trim()}%`);
       const max = Number(maxPrice.replace(/[^0-9]/g, ""));
@@ -61,18 +69,40 @@ function MarketplacePage() {
       phase="Phase 2"
     >
       <div className="grid gap-3 sm:grid-cols-3">
-        <Input placeholder="Keyword or type" value={term} onChange={(e) => setTerm(e.target.value)} aria-label="Search listings" />
-        <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} aria-label="Filter by city" />
-        <Input placeholder="Max price (USD)" inputMode="numeric" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} aria-label="Maximum price" />
+        <Input
+          placeholder="Keyword or type"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          aria-label="Search listings"
+        />
+        <Input
+          placeholder="City"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          aria-label="Filter by city"
+        />
+        <Input
+          placeholder="Max price (USD)"
+          inputMode="numeric"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          aria-label="Maximum price"
+        />
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {listings.isLoading ? <p className="text-sm text-muted-foreground">Loading listings…</p> : null}
+        {listings.isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading listings…</p>
+        ) : null}
         {listings.isError ? (
-          <p className="text-sm text-destructive">Listings could not be loaded. Try again shortly.</p>
+          <p className="text-sm text-destructive">
+            Listings could not be loaded. Try again shortly.
+          </p>
         ) : null}
         {listings.data?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No published listings match those filters yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No published listings match those filters yet.
+          </p>
         ) : null}
         {listings.data?.map((p) => (
           <Link
@@ -83,7 +113,12 @@ function MarketplacePage() {
           >
             <div className="aspect-[4/3] w-full bg-secondary">
               {p.cover_path ? (
-                <img src={p.cover_path} alt={p.title} loading="lazy" className="size-full object-cover" />
+                <img
+                  src={p.cover_path}
+                  alt={p.title}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
               ) : (
                 <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
                   No photo provided
@@ -91,7 +126,9 @@ function MarketplacePage() {
               )}
             </div>
             <div className="p-5">
-              <p className="text-xs uppercase tracking-wide text-accent">{p.property_type ?? "Property"}</p>
+              <p className="text-xs uppercase tracking-wide text-accent">
+                {p.property_type ?? "Property"}
+              </p>
               <h2 className="mt-1 font-semibold">{p.title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {locationLabel([p.address_city, p.address_state]) || "Location on request"}

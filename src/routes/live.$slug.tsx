@@ -16,9 +16,15 @@ export const Route = createFileRoute("/live/$slug")({
   head: ({ params }) => ({
     meta: [
       { title: `Live room ${params.slug} — Accountabul` },
-      { name: "description", content: "Watch the Accountabul conference room, join the chat, and tip the host." },
+      {
+        name: "description",
+        content: "Watch the Accountabul conference room, join the chat, and tip the host.",
+      },
       { property: "og:title", content: `Live room ${params.slug} — Accountabul` },
-      { property: "og:description", content: "Watch the Accountabul conference room, join the chat, and tip the host." },
+      {
+        property: "og:description",
+        content: "Watch the Accountabul conference room, join the chat, and tip the host.",
+      },
       { property: "og:type", content: "video.other" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -37,7 +43,9 @@ function LiveRoomPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("id, slug, title, description, status, scheduled_start_at, ended_at, embed_url, replay_url_path, chat_enabled, tips_enabled, host_business_id")
+        .select(
+          "id, slug, title, description, status, scheduled_start_at, ended_at, embed_url, replay_url_path, chat_enabled, tips_enabled, host_business_id",
+        )
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
@@ -67,11 +75,16 @@ function LiveRoomPage() {
     mutationFn: async () => {
       if (!userId || !e) throw new Error("Sign in to set a reminder.");
       if (reminder.data) {
-        const { error } = await supabase.from("event_reminders").delete().eq("id", reminder.data.id);
+        const { error } = await supabase
+          .from("event_reminders")
+          .delete()
+          .eq("id", reminder.data.id);
         if (error) throw error;
         return false;
       }
-      const { error } = await supabase.from("event_reminders").insert({ user_id: userId, event_id: e.id });
+      const { error } = await supabase
+        .from("event_reminders")
+        .insert({ user_id: userId, event_id: e.id });
       if (error) throw error;
       return true;
     },
@@ -86,7 +99,11 @@ function LiveRoomPage() {
 
   if (!e) {
     return (
-      <PageShell eyebrow="Conference room" title="Event not found" description="This room does not exist or was canceled.">
+      <PageShell
+        eyebrow="Conference room"
+        title="Event not found"
+        description="This room does not exist or was canceled."
+      >
         <Link to="/live" className="text-sm text-accent underline">
           Back to live events
         </Link>
@@ -94,10 +111,19 @@ function LiveRoomPage() {
     );
   }
 
-  const playable = e.status === "live" ? e.embed_url : e.status === "replay_available" ? (e.replay_url_path ?? e.embed_url) : null;
+  const playable =
+    e.status === "live"
+      ? e.embed_url
+      : e.status === "replay_available"
+        ? (e.replay_url_path ?? e.embed_url)
+        : null;
 
   return (
-    <PageShell eyebrow={e.status.replace("_", " ")} title={e.title} description={formatDateTime(e.scheduled_start_at)}>
+    <PageShell
+      eyebrow={e.status.replace("_", " ")}
+      title={e.title}
+      description={formatDateTime(e.scheduled_start_at)}
+    >
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-4">
           <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-secondary">
@@ -112,7 +138,9 @@ function LiveRoomPage() {
             ) : (
               <div className="flex size-full flex-col items-center justify-center gap-2 p-6 text-center">
                 <p className="font-medium">
-                  {e.status === "scheduled" ? "This room has not started yet" : "The stream has ended"}
+                  {e.status === "scheduled"
+                    ? "This room has not started yet"
+                    : "The stream has ended"}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {e.status === "scheduled"
@@ -124,12 +152,18 @@ function LiveRoomPage() {
           </div>
 
           <section className="surface-card p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">About this room</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              About this room
+            </h2>
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed">
               {e.description ?? "No description provided."}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Button variant="secondary" disabled={!userId || toggleReminder.isPending} onClick={() => toggleReminder.mutate()}>
+              <Button
+                variant="secondary"
+                disabled={!userId || toggleReminder.isPending}
+                onClick={() => toggleReminder.mutate()}
+              >
                 {reminder.data ? "Remove reminder" : "Remind me"}
               </Button>
               {!userId ? (
@@ -143,10 +177,14 @@ function LiveRoomPage() {
           {e.tips_enabled ? <TipPanel eventId={e.id} /> : null}
         </div>
 
-        {e.chat_enabled ? <ChatPanel eventId={e.id} /> : (
+        {e.chat_enabled ? (
+          <ChatPanel eventId={e.id} />
+        ) : (
           <aside className="surface-card p-6">
             <h2 className="font-semibold">Chat is off</h2>
-            <p className="mt-2 text-sm text-muted-foreground">The host disabled chat for this room.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              The host disabled chat for this room.
+            </p>
           </aside>
         )}
       </div>
@@ -188,8 +226,15 @@ function ChatPanel({ eventId }: { eventId: string }) {
       if (!userId) throw new Error("Sign in to join the chat.");
       if (!text) throw new Error("Write a message first.");
       if (text.length > 500) throw new Error("Messages are limited to 500 characters.");
-      const { error } = await supabase.from("chat_messages").insert({ event_id: eventId, user_id: userId, body: text });
-      if (error) throw new Error(error.message.includes("row-level security") ? "You cannot post in this room." : error.message);
+      const { error } = await supabase
+        .from("chat_messages")
+        .insert({ event_id: eventId, user_id: userId, body: text });
+      if (error)
+        throw new Error(
+          error.message.includes("row-level security")
+            ? "You cannot post in this room."
+            : error.message,
+        );
     },
     onSuccess: () => {
       setBody("");
@@ -200,7 +245,9 @@ function ChatPanel({ eventId }: { eventId: string }) {
 
   return (
     <aside className="surface-card flex h-[32rem] flex-col p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Room chat</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Room chat
+      </h2>
       <div className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1">
         {!userId ? (
           <p className="text-sm text-muted-foreground">
@@ -216,7 +263,8 @@ function ChatPanel({ eventId }: { eventId: string }) {
         {messages.data?.map((m) => (
           <div key={m.id} className="rounded-md bg-secondary/60 px-3 py-2 text-sm">
             <p className="text-xs text-muted-foreground">
-              {m.user_id === userId ? "You" : `Member ${m.user_id.slice(0, 6)}`} · {formatDateTime(m.created_at)}
+              {m.user_id === userId ? "You" : `Member ${m.user_id.slice(0, 6)}`} ·{" "}
+              {formatDateTime(m.created_at)}
             </p>
             <p className={m.kind === "tip" ? "mt-1 font-medium text-accent" : "mt-1"}>{m.body}</p>
           </div>
@@ -256,7 +304,8 @@ function TipPanel({ eventId }: { eventId: string }) {
   const submit = useMutation({
     mutationFn: async () => {
       const dollars = Number(amount.replace(/[^0-9.]/g, ""));
-      if (!Number.isFinite(dollars) || dollars < 1) throw new Error("Enter an amount of $1 or more.");
+      if (!Number.isFinite(dollars) || dollars < 1)
+        throw new Error("Enter an amount of $1 or more.");
       return tip({ data: { eventId, amountMinor: Math.round(dollars * 100), message } });
     },
     onSuccess: (result) => {
@@ -264,7 +313,9 @@ function TipPanel({ eventId }: { eventId: string }) {
         window.location.href = result.checkoutUrl;
         return;
       }
-      toast.success(`Tip of ${formatMoney(Math.round(Number(amount) * 100))} recorded. ${result.note}`);
+      toast.success(
+        `Tip of ${formatMoney(Math.round(Number(amount) * 100))} recorded. ${result.note}`,
+      );
       setMessage("");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -272,7 +323,9 @@ function TipPanel({ eventId }: { eventId: string }) {
 
   return (
     <section className="surface-card p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Tip the host</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Tip the host
+      </h2>
       <p className="mt-2 text-sm text-muted-foreground">
         Tips are confirmed by the payment provider. Nothing is marked paid from your browser.
       </p>
@@ -283,8 +336,20 @@ function TipPanel({ eventId }: { eventId: string }) {
           submit.mutate();
         }}
       >
-        <Input className="w-28" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" aria-label="Tip amount in dollars" />
-        <Input className="min-w-[12rem] flex-1" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Add a note (optional)" aria-label="Tip message" />
+        <Input
+          className="w-28"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          inputMode="decimal"
+          aria-label="Tip amount in dollars"
+        />
+        <Input
+          className="min-w-[12rem] flex-1"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Add a note (optional)"
+          aria-label="Tip message"
+        />
         <Button type="submit" disabled={!userId || submit.isPending}>
           {submit.isPending ? "Starting…" : "Send tip"}
         </Button>

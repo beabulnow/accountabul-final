@@ -5,7 +5,6 @@ export function PageShell({
   title,
   description,
   audience,
-  phase,
   children,
 }: {
   eyebrow?: string;
@@ -25,7 +24,6 @@ export function PageShell({
         <p className="mt-3 text-base text-muted-foreground">{description}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {audience ? <Tag>Audience: {audience}</Tag> : null}
-          {phase ? <Tag>Delivered in: {phase}</Tag> : null}
         </div>
       </div>
       <div className="mt-10">{children}</div>

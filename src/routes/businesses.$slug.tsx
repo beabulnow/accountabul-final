@@ -11,7 +11,6 @@ import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
 
-
 export const Route = createFileRoute("/businesses/$slug")({
   head: () => ({
     meta: [
@@ -66,7 +65,10 @@ function BusinessDetailPage() {
         description="This business profile is not published, or the link is no longer valid."
         audience="Public"
       >
-        <Link to="/businesses" className="text-sm font-medium text-accent underline-offset-4 hover:underline">
+        <Link
+          to="/businesses"
+          className="text-sm font-medium text-accent underline-offset-4 hover:underline"
+        >
           Back to the directory
         </Link>
       </PageShell>
@@ -85,7 +87,9 @@ function BusinessDetailPage() {
     >
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="surface-card p-6 lg:col-span-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">About</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            About
+          </h2>
           <p className="mt-3 whitespace-pre-line text-sm leading-relaxed">
             {b.description ?? "This business has not added a description yet."}
           </p>
@@ -101,9 +105,16 @@ function BusinessDetailPage() {
         </section>
 
         <aside className="surface-card p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Contact</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Contact
+          </h2>
           <dl className="mt-3 grid gap-3 text-sm">
-            <Row label="Location" value={[b.address_city, b.address_state, b.address_country].filter(Boolean).join(", ")} />
+            <Row
+              label="Location"
+              value={[b.address_city, b.address_state, b.address_country]
+                .filter(Boolean)
+                .join(", ")}
+            />
             <Row label="Founded" value={b.year_founded ? String(b.year_founded) : ""} />
             <Row label="Email" value={b.public_email ?? ""} />
             <Row label="Phone" value={b.public_phone ?? ""} />
@@ -139,7 +150,9 @@ function BusinessServices({ businessId }: { businessId: string }) {
 
   return (
     <section className="surface-card mt-8 p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Services</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Services
+      </h2>
       <ul className="mt-4 grid gap-4 md:grid-cols-2">
         {services.data.map((s) => (
           <li key={s.id} className="rounded-lg border border-border p-4">
@@ -147,7 +160,9 @@ function BusinessServices({ businessId }: { businessId: string }) {
             <p className="mt-1 text-xs text-muted-foreground">{s.category ?? "General service"}</p>
             {s.summary ? <p className="mt-2 text-sm leading-relaxed">{s.summary}</p> : null}
             <p className="mt-3 text-sm font-medium">
-              {s.price_minor != null ? formatMoney(Number(s.price_minor), s.currency) : (s.price_note ?? "Quote on request")}
+              {s.price_minor != null
+                ? formatMoney(Number(s.price_minor), s.currency)
+                : (s.price_note ?? "Quote on request")}
             </p>
             <Button
               size="sm"
@@ -157,7 +172,9 @@ function BusinessServices({ businessId }: { businessId: string }) {
             >
               {activeService === s.id ? "Close" : "Request this service"}
             </Button>
-            {activeService === s.id ? <ServiceInquiryForm businessId={businessId} serviceId={s.id} /> : null}
+            {activeService === s.id ? (
+              <ServiceInquiryForm businessId={businessId} serviceId={s.id} />
+            ) : null}
           </li>
         ))}
       </ul>
@@ -167,7 +184,12 @@ function BusinessServices({ businessId }: { businessId: string }) {
 
 function ServiceInquiryForm({ businessId, serviceId }: { businessId: string; serviceId: string }) {
   const { session } = useSession();
-  const [form, setForm] = useState({ contact_name: "", contact_email: "", contact_phone: "", message: "" });
+  const [form, setForm] = useState({
+    contact_name: "",
+    contact_email: "",
+    contact_phone: "",
+    message: "",
+  });
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -200,10 +222,32 @@ function ServiceInquiryForm({ businessId, serviceId }: { businessId: string; ser
         submit.mutate();
       }}
     >
-      <Input placeholder="Your name" aria-label="Your name" value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} />
-      <Input type="email" placeholder="Email" aria-label="Email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} />
-      <Input placeholder="Phone (optional)" aria-label="Phone" value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
-      <Textarea placeholder="What do you need?" aria-label="Message" rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+      <Input
+        placeholder="Your name"
+        aria-label="Your name"
+        value={form.contact_name}
+        onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+      />
+      <Input
+        type="email"
+        placeholder="Email"
+        aria-label="Email"
+        value={form.contact_email}
+        onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
+      />
+      <Input
+        placeholder="Phone (optional)"
+        aria-label="Phone"
+        value={form.contact_phone}
+        onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+      />
+      <Textarea
+        placeholder="What do you need?"
+        aria-label="Message"
+        rows={3}
+        value={form.message}
+        onChange={(e) => setForm({ ...form, message: e.target.value })}
+      />
       <Button type="submit" size="sm" disabled={submit.isPending}>
         Send request
       </Button>
@@ -231,18 +275,27 @@ function BusinessListings({ businessId }: { businessId: string }) {
 
   return (
     <section className="surface-card mt-8 p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Listings</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Listings
+      </h2>
       <ul className="mt-4 grid gap-3 md:grid-cols-2">
         {listings.data.map((p) => (
           <li key={p.id} className="rounded-lg border border-border p-4">
-            <Link to="/properties/$slug" params={{ slug: p.slug }} className="font-medium underline-offset-4 hover:underline">
+            <Link
+              to="/properties/$slug"
+              params={{ slug: p.slug }}
+              className="font-medium underline-offset-4 hover:underline"
+            >
               {p.title}
             </Link>
             <p className="mt-1 text-xs text-muted-foreground">
-              {[p.address_city, p.address_state].filter(Boolean).join(", ") || "Location on request"}
+              {[p.address_city, p.address_state].filter(Boolean).join(", ") ||
+                "Location on request"}
             </p>
             <p className="mt-2 text-sm font-medium">
-              {p.price_minor != null ? formatMoney(Number(p.price_minor), p.currency) : "Price on request"}
+              {p.price_minor != null
+                ? formatMoney(Number(p.price_minor), p.currency)
+                : "Price on request"}
             </p>
           </li>
         ))}
@@ -250,7 +303,6 @@ function BusinessListings({ businessId }: { businessId: string }) {
     </section>
   );
 }
-
 
 function Row({ label, value }: { label: string; value: string }) {
   if (!value) return null;

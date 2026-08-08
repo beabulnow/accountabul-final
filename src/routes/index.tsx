@@ -46,7 +46,7 @@ function Home() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
               <span aria-hidden className="size-2 rounded-full bg-live" />
-              Phase 0 foundation
+              Accountable marketplace
             </span>
             <h1 className="mt-5 text-4xl font-bold leading-tight md:text-6xl">
               Accountability you can verify — property, business, and live.
@@ -72,14 +72,14 @@ function Home() {
           </div>
           <div className="rounded-2xl border border-white/15 bg-white/5 p-6 backdrop-blur">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-70">
-              Build status
+              What you can do
             </p>
             <ul className="mt-4 space-y-3 text-sm">
               {[
-                "Route map established for all 18 MVP routes",
-                "Design tokens preserved from the approved concept",
-                "Architecture, schema, RLS, migration and roadmap docs committed",
-                "No backend connected yet — no destructive migrations run",
+                "Discover published real-estate listings",
+                "Review accountable business profiles and services",
+                "Join scheduled, live, and replay conference rooms",
+                "Save listings and manage your business from one account",
               ].map((line) => (
                 <li key={line} className="flex gap-3">
                   <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-brass" />
@@ -95,7 +95,11 @@ function Home() {
         <h2 className="text-2xl font-bold md:text-3xl">Three surfaces, one accountable record</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {pillars.map((p) => (
-            <Link key={p.to} to={p.to} className="surface-card block p-6 transition-shadow hover:shadow-lift">
+            <Link
+              key={p.to}
+              to={p.to}
+              className="surface-card block p-6 transition-shadow hover:shadow-lift"
+            >
               <h3 className="text-lg font-semibold">{p.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{p.body}</p>
               <span className="mt-4 inline-block text-sm font-semibold text-accent">Open →</span>
