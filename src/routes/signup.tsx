@@ -31,14 +31,20 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
+type AccountType = "individual" | "business";
+
 function SignupPage() {
   const { session } = useSession();
   const navigate = useNavigate();
+  const [accountType, setAccountType] = useState<AccountType>("individual");
+  const [businessName, setBusinessName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const isBusiness = accountType === "business";
 
   useEffect(() => {
     if (session) void navigate({ to: "/dashboard", replace: true });
@@ -46,6 +52,10 @@ function SignupPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isBusiness && !businessName.trim()) {
+      toast.error("Add your business name to continue.");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email,
@@ -56,6 +66,8 @@ function SignupPage() {
           first_name: firstName,
           last_name: lastName,
           display_name: [firstName, lastName].filter(Boolean).join(" ") || email.split("@")[0],
+          account_type: accountType,
+          ...(isBusiness ? { business_name: businessName.trim() } : {}),
         },
       },
     });
@@ -65,11 +77,19 @@ function SignupPage() {
       return;
     }
     toast.success("Account created. Check your email if confirmation is required.");
-    void navigate({ to: "/dashboard" });
+    void navigate({ to: isBusiness ? "/dashboard/business" : "/dashboard" });
   }
 
   async function handleGoogle() {
     setBusy(true);
+    try {
+      window.sessionStorage.setItem("accountabul:account_type", accountType);
+      if (isBusiness) {
+        window.sessionStorage.setItem("accountabul:business_name", businessName.trim());
+      }
+    } catch {
+      // storage unavailable — signup still works, business details are collected later
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
@@ -79,8 +99,9 @@ function SignupPage() {
       return;
     }
     if (result.redirected) return;
-    void navigate({ to: "/dashboard", replace: true });
+    void navigate({ to: isBusiness ? "/dashboard/business" : "/dashboard", replace: true });
   }
+
 
   return (
     <PageShell
