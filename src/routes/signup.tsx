@@ -112,7 +112,62 @@ function SignupPage() {
       phase="Phase 1"
     >
       <div className="surface-card max-w-md p-6">
-        <form onSubmit={handleSubmit} className="grid gap-4">
+        <fieldset className="grid gap-3">
+          <legend className="mb-3 text-sm font-medium">What are you signing up as?</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                {
+                  value: "individual" as const,
+                  label: "Individual",
+                  hint: "Browse listings, save favorites, join live rooms.",
+                },
+                {
+                  value: "business" as const,
+                  label: "Business",
+                  hint: "List properties, offer services, get verified.",
+                },
+              ]
+            ).map((option) => {
+              const active = accountType === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setAccountType(option.value)}
+                  aria-pressed={active}
+                  className={`rounded-lg border p-3 text-left transition ${
+                    active
+                      ? "border-accent bg-accent/10 ring-1 ring-accent"
+                      : "border-border hover:border-accent/50"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{option.label}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{option.hint}</span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          {isBusiness
+            ? "You still get a personal profile — the business is a separate workspace you own."
+            : "You can add a business later from your dashboard."}
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-6 grid gap-4">
+          {isBusiness ? (
+            <div className="grid gap-2">
+              <Label htmlFor="business">Business name</Label>
+              <Input
+                id="business"
+                required
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+              />
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="first">First name</Label>
@@ -123,6 +178,7 @@ function SignupPage() {
               <Input id="last" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
           </div>
+
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
