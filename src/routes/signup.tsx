@@ -203,7 +203,11 @@ function SignupPage() {
             />
           </div>
           <Button type="submit" disabled={busy}>
-            {busy ? "Creating account…" : "Create account"}
+            {busy
+              ? "Creating account…"
+              : isBusiness
+                ? "Create business account"
+                : "Create account"}
           </Button>
         </form>
 
