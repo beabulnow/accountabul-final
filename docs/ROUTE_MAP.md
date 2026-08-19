@@ -16,7 +16,7 @@ product is never collapsed onto one long page.
 | `/businesses/$slug`     | `src/routes/businesses.$slug.tsx`     | Public          | Business profile, properties, services, credentials                  | 1           |
 | `/saved`                | `src/routes/saved.tsx`                | Member          | Saved properties, followed businesses                                | 2           |
 | `/dashboard`            | `src/routes/dashboard.index.tsx`      | Member/business | Summary and next actions                                             | 1           |
-| `/dashboard/profile`    | `src/routes/dashboard.profile.tsx`    | Member/business | Profile; notification preferences remain a pre-launch decision       | 1           |
+| `/dashboard/profile`    | `src/routes/dashboard.profile.tsx`    | Member/business | Profile/contact data; external notification preferences are deferred | 1           |
 | `/dashboard/business`   | `src/routes/dashboard.business.tsx`   | Business        | Identity, staff, public page, verification                           | 1           |
 | `/dashboard/properties` | `src/routes/dashboard.properties.tsx` | Business        | Drafts, submissions, published, performance                          | 2           |
 | `/dashboard/services`   | `src/routes/dashboard.services.tsx`   | Business        | Services and availability                                            | 2           |

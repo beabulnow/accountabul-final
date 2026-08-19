@@ -1573,6 +1573,10 @@ export type Database = {
           membership_role: Database["public"]["Enums"]["membership_role"];
         }[];
       };
+      touch_event_presence: {
+        Args: { _event_id: string };
+        Returns: number;
+      };
       invite_business_member: {
         Args: {
           _business_id: string;

@@ -3,8 +3,9 @@
 Originally authored as the Phase 0 schema plan. The repository now contains the committed
 Phase 1-5 schema foundation plus the testnet FXRP acceptance and batching contracts. On
 2026-08-19, the authorized CLI read Supabase project `vvrudyzeublgunlfgvlt` and reconciled all
-22 applied migration records into the repository. Two reviewed forward migrations remain local
-and unapplied: cleanup of an unintended probe function and secure business member invitations.
+22 applied migration records into the repository. Three reviewed forward migrations remain local
+and unapplied: cleanup of an unintended probe function, secure business member invitations, and
+aggregate event presence hardening.
 
 ## Conventions (non-negotiable)
 
@@ -96,8 +97,9 @@ migration_batches ──< migration_record_map
   (`scheduled|live|ended|canceled|replay_available`), `provider`,
   `provider_account_id`, `provider_record_id`, `replay_url_path`, moderation settings.
 - **`event_reminders`**, **`event_presence`**, **`chat_messages`**,
-  **`chat_moderation_actions`** — chat writes always pass through the server; bans and
-  roles are enforced server-side and cannot be forged by a client.
+  **`chat_moderation_actions`** — presence is exposed only as a recent aggregate count through an
+  authenticated heartbeat RPC; chat writes always pass through the server; bans and roles are
+  enforced server-side and cannot be forged by a client.
 
 ### Money
 

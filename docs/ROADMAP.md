@@ -4,10 +4,10 @@ Each phase ends deployable. No phase silently broadens the MVP.
 
 Current milestone: **Phase 6 connected launch-gate closure plus targeted
 definition-of-done cleanup**. Core product workflows through Phase 5 and the signed-out
-Chromium viewport matrix are implemented. Live-room presence wiring, member notification
-preferences, and per-feature analytics/audit coverage still require an implementation or
-explicit scope decision. Authenticated role, provider, deployed cross-browser, screen-reader,
-and monitoring evidence also remains before the launch gate can be marked complete. See
+Chromium viewport matrix are implemented. Aggregate live-room presence is implemented, while
+external notification preferences and third-party product analytics are explicitly deferred by
+`docs/LAUNCH_SCOPE_DECISIONS_2026-08-19.md`. Authenticated role, provider, deployed cross-browser,
+screen-reader, and monitoring evidence remains before the launch gate can be marked complete. See
 `docs/PHASE_STATUS.md` for the evidence-based status ledger.
 
 The `0001`-`0011` labels below describe the original logical schema groups, not physical
@@ -92,5 +92,5 @@ fallbacks, console errors, unauthorized data access, or dead-end states.
 ## Definition of done for every feature
 
 Route and UI states; shared validation; server authorization; database transaction
-boundary; safe response contract; analytics event; audit requirement; error and retry
+boundary; safe response contract; explicit analytics decision; audit requirement; error and retry
 behavior; tests covering each role.

@@ -58,6 +58,21 @@ function LiveRoomPage() {
 
   const e = event.data;
 
+  const presence = useQuery({
+    queryKey: ["event-presence", userId, e?.id],
+    enabled: Boolean(userId && e?.id && e.status !== "canceled"),
+    queryFn: async () => {
+      if (!e) throw new Error("Live event not found.");
+      const { data, error } = await supabase.rpc("touch_event_presence", {
+        _event_id: e.id,
+      });
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 45_000,
+    staleTime: 30_000,
+  });
+
   const reminder = useQuery({
     queryKey: ["reminder", userId, e?.id],
     enabled: Boolean(userId && e?.id),
@@ -166,6 +181,11 @@ function LiveRoomPage() {
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed">
               {e.description ?? "No description provided."}
             </p>
+            {userId && typeof presence.data === "number" ? (
+              <p className="mt-3 text-sm text-muted-foreground" role="status" aria-live="polite">
+                {presence.data} {presence.data === 1 ? "member" : "members"} here
+              </p>
+            ) : null}
             <div className="mt-4 flex flex-wrap gap-3">
               <Button
                 variant="secondary"

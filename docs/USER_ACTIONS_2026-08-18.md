@@ -22,10 +22,11 @@ source files, screenshots, or this document.
       billing all change together.
 - [ ] With a `viewer` membership, confirm business, listing, service, and lead write controls are
       absent while read access remains available.
-- [ ] Approve applying the two reviewed forward migrations to Supabase project
-      `vvrudyzeublgunlfgvlt`: legacy probe-function cleanup and the business member invitation RPCs.
-      The CLI dry run confirms these are the only pending remote migrations. After approval, run the
-      connected invitation lifecycle test before deploying the matching UI.
+- [ ] Approve applying the three reviewed forward migrations to Supabase project
+      `vvrudyzeublgunlfgvlt`: legacy probe-function cleanup, business member invitation RPCs, and
+      aggregate event presence hardening. Before application, rerun the CLI dry run to confirm they
+      are still the only pending remote migrations. Then run the connected invitation, role/RLS,
+      chat, and presence lifecycle tests before deploying the matching UI.
 
 The older property-platform access items below are historical source-reconciliation notes and are
 not blockers for work in the final repository.

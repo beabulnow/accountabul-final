@@ -74,5 +74,7 @@ edits. Destructive operations require an explicit approved plan and a rollback r
 ## ADR-010 — Observability
 
 Structured logs carry a request ID and never carry secrets or sensitive personal
-information. Analytics and audit events are defined per feature (see
-`docs/DEFINITION_OF_DONE.md` requirements inside `docs/ROADMAP.md`).
+information. Each feature has an explicit analytics and audit decision. Third-party product
+analytics are deferred until a privacy-approved event catalog exists; privileged and
+security-relevant state changes continue to create database-controlled audit records. See
+`docs/LAUNCH_SCOPE_DECISIONS_2026-08-19.md` and the definition of done in `docs/ROADMAP.md`.
