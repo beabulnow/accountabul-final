@@ -68,6 +68,9 @@ audited.
   production capacity claim.
 - The skipped tests are intentionally connected gates and list the exact missing Supabase
   variables in their output.
+- Production dependency audit reports zero vulnerabilities. Linked database lint reports no errors;
+  the retained warnings are limited to already-applied FXRP testnet compatibility/type-literal code.
+  See `docs/SECURITY_VERIFICATION_2026-08-19.md`.
 
 ## Branch baseline
 
