@@ -6,13 +6,23 @@ const migrationDirectory = fileURLToPath(new URL("../supabase/migrations/", impo
 const files = readdirSync(migrationDirectory)
   .filter((file) => file.endsWith(".sql"))
   .sort();
+const migrations = files.map((file) => ({
+  file,
+  sql: readFileSync(join(migrationDirectory, file), "utf8"),
+}));
+const droppedTables = new Set(
+  migrations.flatMap(({ sql }) =>
+    [...sql.toLowerCase().matchAll(/drop\s+table\s+(?:if\s+exists\s+)?public\.([a-z0-9_]+)/g)].map(
+      (match) => match[1],
+    ),
+  ),
+);
 
 const failures = [];
 
 if (files.length === 0) failures.push("No SQL migrations were found.");
 
-for (const file of files) {
-  const sql = readFileSync(join(migrationDirectory, file), "utf8");
+for (const { file, sql } of migrations) {
   const normalized = sql.toLowerCase();
   const tables = [
     ...normalized.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-z0-9_]+)/g),
@@ -35,7 +45,13 @@ for (const file of files) {
     ) {
       failures.push(`${file}: public.${table} does not enable RLS in the creating migration.`);
     }
-    if (!new RegExp(`grant[\\s\\S]*?on\\s+public\\.${table}\\s+to`, "i").test(sql)) {
+    if (
+      !droppedTables.has(table) &&
+      !new RegExp(
+        `grant[^;]*on(?:\\s+table)?[^;]*\\bpublic\\.${table}\\b[^;]*\\bto\\b[^;]*;`,
+        "i",
+      ).test(sql)
+    ) {
       failures.push(`${file}: public.${table} has no explicit GRANT in the creating migration.`);
     }
   }
