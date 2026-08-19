@@ -80,6 +80,11 @@ Evidence: exact Node/npm versions, commands, exit codes, CI run, and build artif
 
 - [ ] `DESIGN_SYSTEM.md` defines colors, type, spacing, radius, elevation, states,
   responsive breakpoints, accessibility rules, and representative components.
+- [ ] The primary-base transfer uses
+  [`docs/PRIMARY_BASE_DESIGN_SYSTEM.md`](PRIMARY_BASE_DESIGN_SYSTEM.md) and
+  [`docs/PRIMARY_BASE_IMPLEMENTATION_PORT_MAP.md`](PRIMARY_BASE_IMPLEMENTATION_PORT_MAP.md)
+  as reviewed inputs, then updates them for the reconciled target rather than copying
+  provisional table names blindly.
 - [ ] The route map labels every route as public, authenticated, business-member, or admin.
 - [ ] The architecture document shows browser, application, Supabase, Restream, payment, and
   deployment boundaries.
