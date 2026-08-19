@@ -348,7 +348,9 @@ summary below does not replace any required gate in that document.
   review of every experimental XRPL, KYC, payment, credential, and AI path plus full
   connected certification is a longer program.
 - Lovable and GitHub are currently out of sync for the primary base.
-- Local CLI access to the private base repository is not yet authorized.
+- A stale local checkout exists, but local CLI access to fetch the private base repository is
+  not yet authorized. Its dirty vendor/shop work must remain untouched while a clean sibling
+  clone is created after authorization.
 - Live database catalog/advisor access is currently blocked by an outdated Lovable
   connector permission grant.
 - Restream Website Player requires the correct paid plan and manual channel/embed setup.

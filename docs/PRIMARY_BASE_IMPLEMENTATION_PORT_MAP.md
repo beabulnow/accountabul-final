@@ -171,3 +171,8 @@ further, but unrelated verticals must not be bundled into one opaque change.
 Implementation can begin when G0 is complete and connected schema inspection proves the
 actual target authorities. Until then, this map is ready for transfer but database/table
 names that depend on live state remain provisional.
+
+The discovered local checkout under `Documents\Accountabul Platform\property-web3-portal`
+must not be used as the production worktree: it is 241 GitHub commits behind and contains
+uncommitted vendor/shop work belonging to an earlier branch. Create a clean sibling clone
+after local repository authorization succeeds.

@@ -9,11 +9,23 @@ source files, screenshots, or this document.
 
 - [ ] **Authorize local Git access to the primary base repository.**
   - Repository: `JibreelMuhammad/property-web3-portal`
-  - Current local GitHub CLI sessions are `Accountabul-LLC` and `beabulnow`; neither can
-    clone this private repository.
-  - Safest options: authenticate GitHub CLI as `JibreelMuhammad`, or grant the active
-    organization account repository access.
-  - Verification command: `git ls-remote <repository-url> refs/heads/main` must succeed.
+  - A local checkout exists at
+    `C:\Users\JibreelMuhammad\OneDrive - Accountabul\Documents\Accountabul Platform\property-web3-portal`,
+    but its remote refs stop at 2026-05-31. GitHub `main` is 241 commits ahead of that
+    checkout's current commit.
+  - The checkout contains pre-existing uncommitted shop/vendor work on
+    `codex/vendor-onboarding-reentry`. Do not clean, reset, switch, merge, or reuse that
+    worktree for production reconciliation.
+  - The connected GitHub app is authenticated as `JibreelMuhammad` with repository admin
+    permission, but the local CLI/Git credential is `Accountabul-LLC`, which receives
+    `Repository not found` for this private repository.
+  - Choose one authority path: authenticate GitHub CLI locally as `JibreelMuhammad`, or
+    explicitly grant `Accountabul-LLC` repository access. Do not paste a password, token, or
+    one-time authorization code into project files or chat.
+  - After authorization, clone a clean copy into a new sibling folder; preserve the dirty
+    checkout untouched.
+  - Verification command: `git ls-remote <repository-url> refs/heads/main` must succeed and
+    report GitHub `main` at or beyond `1a26ddf99c4cb4672d7cc3b89ce817ab75d78f4e`.
 
 - [ ] **Re-authorize the Lovable connector with current permissions.**
   - Remove the Lovable app/connector from Codex/ChatGPT settings, then add it again.
