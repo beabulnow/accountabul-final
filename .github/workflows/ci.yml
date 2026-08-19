@@ -29,6 +29,36 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Scan pull request commits
+        if: github.event_name == 'pull_request'
+        uses: docker://ghcr.io/gitleaks/gitleaks:v8.24.3
+        with:
+          args: >-
+            detect
+            --source=/github/workspace
+            --redact
+            --verbose
+            --exit-code=2
+            --log-opts=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+      - name: Scan pushed commits
+        if: github.event_name == 'push'
+        uses: docker://ghcr.io/gitleaks/gitleaks:v8.24.3
+        with:
+          args: >-
+            detect
+            --source=/github/workspace
+            --redact
+            --verbose
+            --exit-code=2
+            --log-opts=${{ github.event.before }}..${{ github.sha }}
+      - name: Scan the current tree
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker://ghcr.io/gitleaks/gitleaks:v8.24.3
+        with:
+          args: >-
+            detect
+            --source=/github/workspace
+            --redact
+            --verbose
+            --exit-code=2
+            --no-git
