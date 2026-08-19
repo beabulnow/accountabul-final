@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
+import { hasPublicBusinessIdentity } from "@/lib/public-business";
 
 export const Route = createFileRoute("/businesses/$slug")({
   head: () => ({
@@ -45,7 +46,7 @@ function BusinessDetailPage() {
         .eq("public_profile_enabled", true)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data && hasPublicBusinessIdentity(data) ? data : null;
     },
   });
 

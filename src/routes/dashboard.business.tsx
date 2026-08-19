@@ -123,15 +123,15 @@ function BusinessPage() {
         _slug: slug,
         _legal_name: form.legal_name,
         _display_name: form.display_name,
-        _headline: form.headline || null,
-        _description: form.description || null,
-        _website_url: form.website_url || null,
-        _public_email: form.public_email || null,
-        _public_phone: form.public_phone || null,
-        _primary_industry: form.primary_industry || null,
-        _address_city: form.address_city || null,
-        _address_state: form.address_state || null,
-        _address_country: form.address_country || null,
+        ...(form.headline ? { _headline: form.headline } : {}),
+        ...(form.description ? { _description: form.description } : {}),
+        ...(form.website_url ? { _website_url: form.website_url } : {}),
+        ...(form.public_email ? { _public_email: form.public_email } : {}),
+        ...(form.public_phone ? { _public_phone: form.public_phone } : {}),
+        ...(form.primary_industry ? { _primary_industry: form.primary_industry } : {}),
+        ...(form.address_city ? { _address_city: form.address_city } : {}),
+        ...(form.address_state ? { _address_state: form.address_state } : {}),
+        ...(form.address_country ? { _address_country: form.address_country } : {}),
       });
       if (error) throw error;
     },
@@ -277,11 +277,7 @@ function BusinessPage() {
         <CredentialsPanel businessId={business.id} />
       ) : null}
       {business ? (
-        <StaffPanel
-          businessId={business.id}
-          currentUserId={userId!}
-          canManage={capabilities.manageMembers}
-        />
+        <StaffPanel businessId={business.id} canManage={capabilities.manageMembers} />
       ) : null}
     </div>
   );
@@ -373,17 +369,9 @@ function CredentialsPanel({ businessId }: { businessId: string }) {
   );
 }
 
-function StaffPanel({
-  businessId,
-  currentUserId,
-  canManage,
-}: {
-  businessId: string;
-  currentUserId: string;
-  canManage: boolean;
-}) {
+function StaffPanel({ businessId, canManage }: { businessId: string; canManage: boolean }) {
   const queryClient = useQueryClient();
-  const [memberId, setMemberId] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
   const [role, setRole] = useState<"manager" | "listing_manager" | "lead_manager" | "viewer">(
     "viewer",
   );
@@ -401,36 +389,42 @@ function StaffPanel({
   });
   const addMember = useMutation({
     mutationFn: async () => {
-      if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-          memberId.trim(),
-        )
-      ) {
-        throw new Error("Enter the existing member's account UUID.");
+      if (!memberEmail.trim() || !memberEmail.includes("@")) {
+        throw new Error("Enter the member's Accountabul email.");
       }
-      const { error } = await supabase.from("business_members").insert({
-        business_id: businessId,
-        user_id: memberId.trim(),
-        membership_role: role,
-        invitation_status: "active",
-        invited_by: currentUserId,
-        joined_at: new Date().toISOString(),
+      const { error } = await supabase.rpc("invite_business_member", {
+        _business_id: businessId,
+        _email: memberEmail.trim(),
+        _role: role,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      setMemberId("");
-      toast.success("Staff membership added.");
+      setMemberEmail("");
+      toast.success("Invitation created. The member will see it after signing in.");
+      void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const changeRole = useMutation({
+    mutationFn: async ({ id, nextRole }: { id: string; nextRole: typeof role }) => {
+      const { error } = await supabase.rpc("update_business_member_role", {
+        _membership_id: id,
+        _role: nextRole,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Staff role updated.");
       void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
   const revokeMember = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("business_members")
-        .update({ invitation_status: "revoked" })
-        .eq("id", id);
+      const { error } = await supabase.rpc("revoke_business_member", {
+        _membership_id: id,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -444,8 +438,8 @@ function StaffPanel({
     <section className="surface-card mt-6 p-6">
       <h2 className="text-lg font-semibold">Staff access</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Owners can add an existing Accountabul member by account UUID and assign least-privilege
-        access.
+        Owners can invite an existing Accountabul member by account email and assign least-privilege
+        access. Invitations appear in the member's dashboard.
       </p>
       <ul className="mt-4 space-y-2 text-sm">
         {members.data?.map((member) => (
@@ -453,22 +447,45 @@ function StaffPanel({
             key={member.id}
             className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3"
           >
-            <span>
-              {member.user_id.slice(0, 8)}… · {member.membership_role.replace("_", " ")} ·{" "}
-              {member.invitation_status}
-            </span>
-            {canManage &&
-            member.membership_role !== "owner" &&
-            member.invitation_status !== "revoked" ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={revokeMember.isPending}
-                onClick={() => revokeMember.mutate(member.id)}
-              >
-                Revoke
-              </Button>
-            ) : null}
+            <span>{member.user_id.slice(0, 8)}…</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {canManage &&
+              member.membership_role !== "owner" &&
+              member.invitation_status !== "revoked" ? (
+                <select
+                  aria-label={`Role for member ${member.user_id.slice(0, 8)}`}
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                  value={member.membership_role}
+                  disabled={changeRole.isPending}
+                  onChange={(event) =>
+                    changeRole.mutate({
+                      id: member.id,
+                      nextRole: event.target.value as typeof role,
+                    })
+                  }
+                >
+                  <option value="manager">Manager</option>
+                  <option value="listing_manager">Listing manager</option>
+                  <option value="lead_manager">Lead manager</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              ) : (
+                <span>{member.membership_role.replace("_", " ")}</span>
+              )}
+              <span className="text-muted-foreground">{member.invitation_status}</span>
+              {canManage &&
+              member.membership_role !== "owner" &&
+              member.invitation_status !== "revoked" ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={revokeMember.isPending}
+                  onClick={() => revokeMember.mutate(member.id)}
+                >
+                  Revoke
+                </Button>
+              ) : null}
+            </div>
           </li>
         ))}
       </ul>
@@ -481,10 +498,11 @@ function StaffPanel({
           }}
         >
           <Input
-            value={memberId}
-            onChange={(event) => setMemberId(event.target.value)}
-            placeholder="Existing member account UUID"
-            aria-label="Existing member account UUID"
+            type="email"
+            value={memberEmail}
+            onChange={(event) => setMemberEmail(event.target.value)}
+            placeholder="member@example.com"
+            aria-label="Existing member account email"
           />
           <select
             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -497,8 +515,8 @@ function StaffPanel({
             <option value="lead_manager">Lead manager</option>
             <option value="viewer">Viewer</option>
           </select>
-          <Button type="submit" disabled={addMember.isPending || !memberId.trim()}>
-            Add staff
+          <Button type="submit" disabled={addMember.isPending || !memberEmail.trim()}>
+            Invite staff
           </Button>
         </form>
       ) : null}

@@ -1,6 +1,6 @@
 # Phase Status Ledger
 
-Last reviewed: 2026-08-08
+Last reviewed: 2026-08-19
 
 This ledger records reproducible evidence. "Credential-free complete" means all safe work
 that does not need a connected provider has been implemented and verified; it does not mean
@@ -18,8 +18,8 @@ the roadmap's connected gate has passed.
   screen-reader matrix, production-scale load, and monitoring alerts.
 - **Launch decision:** Not approved for production launch until the remaining connected
   evidence below is recorded.
-- **Delivery state at this review:** local `main` contains phase-gate work not yet present on
-  `origin/main`; GitHub/Lovable are therefore behind the local implementation.
+- **Delivery state at this review:** recovery work is committed on
+  `codex/final-build-recovery-20260818`; GitHub/Lovable do not yet contain those commits.
 
 Status terms used in this ledger:
 
@@ -33,7 +33,7 @@ Status terms used in this ledger:
 | Phase                        | Implementation status                           | Concrete evidence                                                                                                                                                                                                                                                                      | Connected gate still required                                                                                                                                                                                                                                                                         |
 | ---------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 — Foundation               | Implemented and locally verified                | Architecture, route map, schema, threat model, additive migration policy, three phase workflows, migration checks, secret scan, Node 22 CI.                                                                                                                                            | Push the current reviewed commits normally and observe the repository workflows pass on GitHub/Lovable.                                                                                                                                                                                               |
-| 1 — Accounts and businesses  | Complete                                        | Atomic business/owner creation, staff membership management, narrow public projections, credential submission/review, audited lifecycle RPCs, RLS and grant hardening. Unit/static gates pass.                                                                                         | Apply migrations and run the two-user/two-business live RLS workflow with Supabase credentials; record anonymous 403/private-field proof.                                                                                                                                                             |
+| 1 — Accounts and businesses  | Implemented locally; connected gate pending     | Atomic business/owner creation, deterministic active-business context, owner-controlled member invitations, narrow public projections, credential submission/review, audited lifecycle RPCs, RLS and grant hardening. Unit/static gates pass.                                          | Apply the two pending local migrations, then run the invitation and two-user/two-business live RLS workflows with Supabase credentials; record denial-path and anonymous/private-field proof.                                                                                                           |
 | 2 — Marketplace and services | Complete                                        | Listing/service lifecycle, saves, business follows, inquiries, leads, private property media bucket, manager-only writes, signed reads, cleanup and missing-image fallback. Storage policy tests pass.                                                                                 | Apply migrations in a disposable project and run the member/owner/outsider/suspended-parent upload lifecycle gate.                                                                                                                                                                                    |
 | 3 — Live events and chat     | Core workflow implemented; presence wiring open | Scheduled/connecting/live/reconnecting/ended/provider-down UI, server-only chat RPC, room/event validation, bans, moderator rules, atomic rate limiting, and direct-insert revocation. The `event_presence` table exists, but the route does not yet maintain or display presence.     | Implement or explicitly defer presence, then apply migrations and run the live member/banned/burst/forged-user/moderator/anonymous chat gate; verify the configured streaming provider and replay URLs.                                                                                               |
 | 4 — Tips and payments        | Complete                                        | Strict server checkout inputs/return origin, signed webhook reconciliation, idempotent paid-tip chat event, failure/expiry/refund handling, audit trail, and focused webhook tests.                                                                                                    | Configure Stripe test mode and save checkout, duplicate/reordered webhook, refresh, async failure, wrong amount/currency/session, and refund evidence.                                                                                                                                                |
@@ -58,8 +58,8 @@ These are code/scope questions, not missing provider credentials:
 
 ## Latest local verification
 
-- Latest recorded full `npm run check`: passed — 9 migrations inspected, static QA 50/50,
-  typecheck and lint with no errors, 37 tests discovered (33 passed and 4
+- Latest recorded full `npm run check`: passed — 24 migrations inspected, static QA 50/50,
+  typecheck and lint with no errors, 44 tests discovered (39 passed and 5
   credential-dependent skipped), and production build succeeded. Ten existing Fast Refresh
   lint warnings remain non-blocking.
 - Signed-out in-app Chromium QA passed 54/54 route/viewport combinations at 360x800,
@@ -79,9 +79,10 @@ These are code/scope questions, not missing provider credentials:
 
 - Canonical repository: `beabulnow/accountabul-final`
 - Integration branch: `main`
-- At the 2026-08-08 sync audit, local `main` was ahead of `origin/main`; verify with
-  `git status -sb` before publishing and push normally after review.
-- Phase work starts from refreshed `origin/main` on a `codex/*` branch.
+- The recovery branch includes a normal merge of the refreshed `origin/main` history plus local
+  account-context, schema-reconciliation, and invitation checkpoints. Verify with `git status -sb`
+  before publishing and push normally after review.
+- New phase work starts from refreshed `origin/main` on a `codex/*` branch.
 - Never rewrite pushed history. Merge `origin/main` into a long-running phase branch when
   synchronization is needed.
 - The already-merged `codex/initial-qa-fixes` branch is historical and should not receive

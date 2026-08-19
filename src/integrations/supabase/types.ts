@@ -483,6 +483,186 @@ export type Database = {
           },
         ];
       };
+      fxrp_acceptance_batch_members: {
+        Row: {
+          batch_id: string;
+          created_at: string;
+          position: number;
+          reservation_id: string;
+        };
+        Insert: {
+          batch_id: string;
+          created_at?: string;
+          position: number;
+          reservation_id: string;
+        };
+        Update: {
+          batch_id?: string;
+          created_at?: string;
+          position?: number;
+          reservation_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fxrp_acceptance_batch_members_batch_id_fkey";
+            columns: ["batch_id"];
+            isOneToOne: false;
+            referencedRelation: "fxrp_acceptance_batches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "fxrp_acceptance_batch_members_reservation_id_fkey";
+            columns: ["reservation_id"];
+            isOneToOne: true;
+            referencedRelation: "xrp_acceptance_reservations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      fxrp_acceptance_batches: {
+        Row: {
+          created_at: string;
+          execution_evidence: Json;
+          expense_reserve_drops: number;
+          expires_at: string;
+          failure_code: string | null;
+          id: string;
+          idempotency_key: string;
+          maximum_profit_payment_drops: number;
+          maximum_xrpl_fee_drops: number;
+          minimum_profit_payment_drops: number;
+          profit_wallet_address: string;
+          quote_expires_at: string;
+          route: Json;
+          route_profile: string;
+          settled_at: string | null;
+          settlement_amount_drops: number;
+          settlement_wallet_address: string;
+          slippage_bps: number;
+          source_amount_base_units: number;
+          source_asset_key: string;
+          source_decimals: number;
+          source_destination: string;
+          status: string;
+          total_fees_bps: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          execution_evidence?: Json;
+          expense_reserve_drops: number;
+          expires_at: string;
+          failure_code?: string | null;
+          id: string;
+          idempotency_key: string;
+          maximum_profit_payment_drops: number;
+          maximum_xrpl_fee_drops: number;
+          minimum_profit_payment_drops: number;
+          profit_wallet_address: string;
+          quote_expires_at: string;
+          route: Json;
+          route_profile: string;
+          settled_at?: string | null;
+          settlement_amount_drops: number;
+          settlement_wallet_address: string;
+          slippage_bps: number;
+          source_amount_base_units: number;
+          source_asset_key: string;
+          source_decimals: number;
+          source_destination: string;
+          status: string;
+          total_fees_bps: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          execution_evidence?: Json;
+          expense_reserve_drops?: number;
+          expires_at?: string;
+          failure_code?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          maximum_profit_payment_drops?: number;
+          maximum_xrpl_fee_drops?: number;
+          minimum_profit_payment_drops?: number;
+          profit_wallet_address?: string;
+          quote_expires_at?: string;
+          route?: Json;
+          route_profile?: string;
+          settled_at?: string | null;
+          settlement_amount_drops?: number;
+          settlement_wallet_address?: string;
+          slippage_bps?: number;
+          source_amount_base_units?: number;
+          source_asset_key?: string;
+          source_decimals?: number;
+          source_destination?: string;
+          status?: string;
+          total_fees_bps?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      fxrp_conversion_runs: {
+        Row: {
+          conversion_id: string;
+          created_at: string;
+          environment: string;
+          evidence: Json;
+          intent: Json;
+          last_error: Json | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+          version: number;
+        };
+        Insert: {
+          conversion_id: string;
+          created_at?: string;
+          environment?: string;
+          evidence?: Json;
+          intent: Json;
+          last_error?: Json | null;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+          version?: number;
+        };
+        Update: {
+          conversion_id?: string;
+          created_at?: string;
+          environment?: string;
+          evidence?: Json;
+          intent?: Json;
+          last_error?: Json | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Relationships: [];
+      };
+      fxrp_signer_nonces: {
+        Row: {
+          last_nonce: number;
+          signer_address: string;
+          updated_at: string;
+        };
+        Insert: {
+          last_nonce: number;
+          signer_address: string;
+          updated_at?: string;
+        };
+        Update: {
+          last_nonce?: number;
+          signer_address?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       migration_batches: {
         Row: {
           dry_run: boolean;
@@ -1068,12 +1248,233 @@ export type Database = {
         };
         Relationships: [];
       };
+      xrp_acceptance_policies: {
+        Row: {
+          created_at: string;
+          enabled: boolean;
+          environment: string;
+          maximum_overpayment_bps: number;
+          maximum_payment_drops: number;
+          maximum_slippage_bps: number;
+          maximum_total_fees_bps: number;
+          minimum_payment_drops: number;
+          open_exposure_limit_drops: number;
+          rolling_24_hour_limit_drops: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          enabled?: boolean;
+          environment?: string;
+          maximum_overpayment_bps?: number;
+          maximum_payment_drops: number;
+          maximum_slippage_bps: number;
+          maximum_total_fees_bps: number;
+          minimum_payment_drops: number;
+          open_exposure_limit_drops: number;
+          rolling_24_hour_limit_drops: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          enabled?: boolean;
+          environment?: string;
+          maximum_overpayment_bps?: number;
+          maximum_payment_drops?: number;
+          maximum_slippage_bps?: number;
+          maximum_total_fees_bps?: number;
+          minimum_payment_drops?: number;
+          open_exposure_limit_drops?: number;
+          rolling_24_hour_limit_drops?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      xrp_acceptance_reservations: {
+        Row: {
+          created_at: string;
+          execution_evidence: Json;
+          expense_reserve_drops: number | null;
+          expires_at: string;
+          failure_code: string | null;
+          funding_evidence: Json;
+          id: string;
+          idempotency_key: string;
+          invoice_id: string;
+          maximum_profit_payment_drops: number | null;
+          maximum_xrpl_fee_drops: number | null;
+          minimum_profit_payment_drops: number | null;
+          profit_wallet_address: string | null;
+          quote_expires_at: string;
+          released_at: string | null;
+          route: Json;
+          route_profile: string;
+          settled_at: string | null;
+          settlement_amount_drops: number;
+          settlement_wallet_address: string | null;
+          slippage_bps: number;
+          source_amount_base_units: number;
+          source_asset_key: string;
+          source_decimals: number | null;
+          source_destination: string | null;
+          source_sender: string | null;
+          status: string;
+          total_fees_bps: number;
+          updated_at: string;
+          user_id: string;
+          xrpl_destination: string | null;
+          xrpl_destination_tag: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          execution_evidence?: Json;
+          expense_reserve_drops?: number | null;
+          expires_at: string;
+          failure_code?: string | null;
+          funding_evidence?: Json;
+          id?: string;
+          idempotency_key: string;
+          invoice_id: string;
+          maximum_profit_payment_drops?: number | null;
+          maximum_xrpl_fee_drops?: number | null;
+          minimum_profit_payment_drops?: number | null;
+          profit_wallet_address?: string | null;
+          quote_expires_at: string;
+          released_at?: string | null;
+          route: Json;
+          route_profile: string;
+          settled_at?: string | null;
+          settlement_amount_drops: number;
+          settlement_wallet_address?: string | null;
+          slippage_bps: number;
+          source_amount_base_units: number;
+          source_asset_key: string;
+          source_decimals?: number | null;
+          source_destination?: string | null;
+          source_sender?: string | null;
+          status?: string;
+          total_fees_bps: number;
+          updated_at?: string;
+          user_id: string;
+          xrpl_destination?: string | null;
+          xrpl_destination_tag?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          execution_evidence?: Json;
+          expense_reserve_drops?: number | null;
+          expires_at?: string;
+          failure_code?: string | null;
+          funding_evidence?: Json;
+          id?: string;
+          idempotency_key?: string;
+          invoice_id?: string;
+          maximum_profit_payment_drops?: number | null;
+          maximum_xrpl_fee_drops?: number | null;
+          minimum_profit_payment_drops?: number | null;
+          profit_wallet_address?: string | null;
+          quote_expires_at?: string;
+          released_at?: string | null;
+          route?: Json;
+          route_profile?: string;
+          settled_at?: string | null;
+          settlement_amount_drops?: number;
+          settlement_wallet_address?: string | null;
+          slippage_bps?: number;
+          source_amount_base_units?: number;
+          source_asset_key?: string;
+          source_decimals?: number | null;
+          source_destination?: string | null;
+          source_sender?: string | null;
+          status?: string;
+          total_fees_bps?: number;
+          updated_at?: string;
+          user_id?: string;
+          xrpl_destination?: string | null;
+          xrpl_destination_tag?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "xrp_acceptance_reservations_invoice_id_fkey";
+            columns: ["invoice_id"];
+            isOneToOne: false;
+            referencedRelation: "xrp_settlement_invoices";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      xrp_accepted_assets: {
+        Row: {
+          asset_key: string;
+          created_at: string;
+          enabled: boolean;
+          route_profile: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          asset_key: string;
+          created_at?: string;
+          enabled?: boolean;
+          route_profile: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          asset_key?: string;
+          created_at?: string;
+          enabled?: boolean;
+          route_profile?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      xrp_settlement_invoices: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          external_reference: string;
+          id: string;
+          settled_amount_drops: number;
+          status: string;
+          target_amount_drops: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at: string;
+          external_reference: string;
+          id?: string;
+          settled_amount_drops?: number;
+          status?: string;
+          target_amount_drops: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          external_reference?: string;
+          id?: string;
+          settled_amount_drops?: number;
+          status?: string;
+          target_amount_drops?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_business_credentials: {
         Row: {
-          business_id: string;
-          credential_type: string;
+          business_id: string | null;
+          credential_type: string | null;
           expires_at: string | null;
           identifier: string | null;
           issued_at: string | null;
@@ -1088,20 +1489,20 @@ export type Database = {
           address_state: string | null;
           cover_path: string | null;
           description: string | null;
-          display_name: string;
+          display_name: string | null;
           employee_count_range: string | null;
           headline: string | null;
-          id: string;
+          id: string | null;
           logo_path: string | null;
           primary_industry: string | null;
-          profile_status: Database["public"]["Enums"]["profile_status"];
+          profile_status: Database["public"]["Enums"]["profile_status"] | null;
           public_email: string | null;
           public_phone: string | null;
-          public_profile_enabled: boolean;
+          public_profile_enabled: boolean | null;
           published_at: string | null;
-          service_areas: string[];
-          slug: string;
-          verification_status: Database["public"]["Enums"]["verification_status"];
+          service_areas: string[] | null;
+          slug: string | null;
+          verification_status: Database["public"]["Enums"]["verification_status"] | null;
           website_url: string | null;
           year_founded: number | null;
         };
@@ -1112,6 +1513,81 @@ export type Database = {
       can_manage_business: {
         Args: { _business_id: string; _user_id: string };
         Returns: boolean;
+      };
+      claim_fxrp_acceptance: {
+        Args: { p_reservation_id: string };
+        Returns: Json;
+      };
+      claim_fxrp_acceptance_batch: {
+        Args: {
+          p_batch_id: string;
+          p_idempotency_key: string;
+          p_reservation_ids: string[];
+        };
+        Returns: Json;
+      };
+      claim_next_fxrp_acceptance_batch:
+        | {
+            Args: {
+              p_maximum_members?: number;
+              p_minimum_members?: number;
+              p_minimum_source_amount_base_units: number;
+              p_source_destination: string;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_maximum_members?: number;
+              p_minimum_members?: number;
+              p_minimum_source_amount_base_units: number;
+              p_required_slippage_bps: number;
+              p_source_destination: string;
+            };
+            Returns: string;
+          };
+      create_business_with_owner: {
+        Args: {
+          _address_city?: string;
+          _address_country?: string;
+          _address_state?: string;
+          _description?: string;
+          _display_name: string;
+          _headline?: string;
+          _legal_name: string;
+          _primary_industry?: string;
+          _public_email?: string;
+          _public_phone?: string;
+          _slug: string;
+          _website_url?: string;
+        };
+        Returns: string;
+      };
+      get_my_business_invitations: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          business_id: string;
+          business_name: string;
+          invited_at: string;
+          membership_id: string;
+          membership_role: Database["public"]["Enums"]["membership_role"];
+        }[];
+      };
+      invite_business_member: {
+        Args: {
+          _business_id: string;
+          _email: string;
+          _role: Database["public"]["Enums"]["membership_role"];
+        };
+        Returns: string;
+      };
+      finalize_fxrp_acceptance: {
+        Args: { p_reservation_id: string };
+        Returns: string;
+      };
+      finalize_fxrp_acceptance_batch: {
+        Args: { p_batch_id: string };
+        Returns: string;
       };
       has_role: {
         Args: {
@@ -1132,23 +1608,75 @@ export type Database = {
         Args: { _event_id: string; _user_id: string };
         Returns: boolean;
       };
-      create_business_with_owner: {
-        Args: {
-          _address_city?: string | null;
-          _address_country?: string | null;
-          _address_state?: string | null;
-          _description?: string | null;
-          _display_name: string;
-          _headline?: string | null;
-          _legal_name: string;
-          _primary_industry?: string | null;
-          _public_email?: string | null;
-          _public_phone?: string | null;
-          _slug: string;
-          _website_url?: string | null;
-        };
+      list_fxrp_acceptances_for_funding: {
+        Args: { p_limit?: number; p_source_destination: string };
+        Returns: string[];
+      };
+      read_fxrp_acceptance: {
+        Args: { p_reservation_id: string };
+        Returns: Json;
+      };
+      read_fxrp_acceptance_batch: {
+        Args: { p_batch_id: string };
+        Returns: Json;
+      };
+      record_xrp_acceptance_funding: {
+        Args: { p_funding_evidence: Json; p_reservation_id: string };
         Returns: string;
       };
+      reserve_fxrp_signer_nonce: {
+        Args: { p_floor_nonce: number; p_signer_address: string };
+        Returns: number;
+      };
+      reserve_xrp_acceptance:
+        | {
+            Args: {
+              p_idempotency_key: string;
+              p_invoice_id: string;
+              p_quote_expires_at: string;
+              p_reservation_expires_at: string;
+              p_route: Json;
+              p_route_profile: string;
+              p_settlement_amount_drops: number;
+              p_slippage_bps: number;
+              p_source_amount_base_units: number;
+              p_source_asset_key: string;
+              p_source_decimals: number;
+              p_source_destination: string;
+              p_source_sender: string;
+              p_total_fees_bps: number;
+              p_xrpl_destination: string;
+              p_xrpl_destination_tag: number;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_expense_reserve_drops: number;
+              p_idempotency_key: string;
+              p_invoice_id: string;
+              p_maximum_profit_payment_drops: number;
+              p_maximum_xrpl_fee_drops: number;
+              p_minimum_profit_payment_drops: number;
+              p_profit_wallet_address: string;
+              p_quote_expires_at: string;
+              p_reservation_expires_at: string;
+              p_route: Json;
+              p_route_profile: string;
+              p_settlement_amount_drops: number;
+              p_settlement_wallet_address: string;
+              p_slippage_bps: number;
+              p_source_amount_base_units: number;
+              p_source_asset_key: string;
+              p_source_decimals: number;
+              p_source_destination: string;
+              p_source_sender: string;
+              p_total_fees_bps: number;
+              p_xrpl_destination: string;
+              p_xrpl_destination_tag: number;
+            };
+            Returns: string;
+          };
       review_business: {
         Args: { _business_id: string; _decision: string };
         Returns: undefined;
@@ -1165,9 +1693,39 @@ export type Database = {
         Args: { _decision: string; _service_id: string };
         Returns: undefined;
       };
+      respond_to_business_invitation: {
+        Args: { _accept: boolean; _membership_id: string };
+        Returns: string;
+      };
+      revoke_business_member: {
+        Args: { _membership_id: string };
+        Returns: undefined;
+      };
       send_chat_message: {
         Args: { _body: string; _event_id: string };
-        Returns: Database["public"]["Tables"]["chat_messages"]["Row"];
+        Returns: {
+          body: string;
+          created_at: string;
+          event_id: string;
+          id: string;
+          is_hidden: boolean;
+          kind: string;
+          metadata: Json;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "chat_messages";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_business_member_role: {
+        Args: {
+          _membership_id: string;
+          _role: Database["public"]["Enums"]["membership_role"];
+        };
+        Returns: undefined;
       };
     };
     Enums: {

@@ -17,7 +17,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "test:phase1": "node --env-file-if-exists=.env --experimental-strip-types --test tests/phase1-rls.integration.test.ts tests/phase-gates.integration.test.ts",
+    "test:phase1": "node --env-file-if-exists=.env --experimental-strip-types --test tests/phase1-rls.integration.test.ts tests/phase-gates.integration.test.ts tests/business-invitations.integration.test.ts",
     "test:phase2": "node --env-file-if-exists=.env --experimental-strip-types --test tests/storage-rls.integration.test.ts",
     "test:phase3": "node --env-file-if-exists=.env --experimental-strip-types --test tests/chat-rls.integration.test.ts",
     "test:connected": "node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase1 && node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase2 && node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase3",

@@ -22,6 +22,10 @@ source files, screenshots, or this document.
       billing all change together.
 - [ ] With a `viewer` membership, confirm business, listing, service, and lead write controls are
       absent while read access remains available.
+- [ ] Approve applying the two reviewed forward migrations to Supabase project
+      `vvrudyzeublgunlfgvlt`: legacy probe-function cleanup and the business member invitation RPCs.
+      The CLI dry run confirms these are the only pending remote migrations. After approval, run the
+      connected invitation lifecycle test before deploying the matching UI.
 
 The older property-platform access items below are historical source-reconciliation notes and are
 not blockers for work in the final repository.

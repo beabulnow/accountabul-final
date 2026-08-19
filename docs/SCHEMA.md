@@ -1,10 +1,10 @@
 # Canonical Schema — Accountabul Platform Production
 
 Originally authored as the Phase 0 schema plan. The repository now contains the committed
-Phase 1-5 schema foundation. The configured Supabase project could not be read during the
-latest verification because the current CLI profile returned HTTP 403, so the live applied
-state remains unknown. Verify it with an authorized Supabase CLI/MCP session before each
-connected phase gate or remote schema change.
+Phase 1-5 schema foundation plus the testnet FXRP acceptance and batching contracts. On
+2026-08-19, the authorized CLI read Supabase project `vvrudyzeublgunlfgvlt` and reconciled all
+22 applied migration records into the repository. Two reviewed forward migrations remain local
+and unapplied: cleanup of an unintended probe function and secure business member invitations.
 
 ## Conventions (non-negotiable)
 
@@ -71,8 +71,9 @@ migration_batches ──< migration_record_map
   `created_by`, timestamps, `published_at`.
 - **`business_members`** — `id`, `business_id`, `user_id`, `membership_role`
   (`owner|manager|listing_manager|lead_manager|viewer`), `permissions`,
-  `invitation_status`, `invited_by`, `joined_at`, timestamps. An owner may grant only
-  within their own business.
+  `invitation_status`, `invited_by`, `joined_at`, timestamps. The pending forward contract removes
+  direct authenticated writes; owner invitation, role change, and revocation plus invited-member
+  acceptance/decline cross narrow audited RPCs.
 - **`business_credentials`** — private verification artifacts plus a
   `public_display_approved` flag. Documents and private notes are never client-readable.
 
@@ -105,6 +106,10 @@ migration_batches ──< migration_record_map
   `provider_record_id`, `idempotency_key` (unique), timestamps.
 - **`payment_events`** — raw-but-redacted provider event ledger with a unique
   `(provider, provider_event_id)` so repeated webhooks create exactly one paid tip.
+- **FXRP testnet acceptance** — `fxrp_conversion_runs`, signer nonces, XRP acceptance policies,
+  assets, invoices, reservations, minimum batches, and batch members. The migration series binds
+  funding sender, acceptance policy, nonce reservation, settlement authorization, slippage, and
+  automated batch coordination. It is explicitly testnet-only and stores no wallet secrets.
 
 ### Operations
 
@@ -137,7 +142,7 @@ names of the physical migration files.
 10. `0010_audit_log`
 11. `0011_migration_mapping_tables`
 
-The logical groups were consolidated into these nine timestamped Supabase migrations:
+The original logical groups were consolidated into these nine timestamped Supabase migrations:
 
 | Committed migration                                       | Responsibility                                                                   |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -149,8 +154,14 @@ The logical groups were consolidated into these nine timestamped Supabase migrat
 | `20260808115351_server_chat_gateway.sql`                  | Server-mediated chat and atomic rate limiting                                    |
 | `20260808120229_property_media_storage.sql`               | Private property-media bucket and object policies                                |
 | `20260810171057_harden_private_rls_helpers.sql`           | Private helper isolation, security-invoker projections, and explicit privileges  |
-| `20260811065051_optimize_rls_and_fk_indexes.sql`          | RLS plan optimization and foreign-key/query-supporting indexes                    |
+| `20260811065051_optimize_rls_and_fk_indexes.sql`          | RLS plan optimization and foreign-key/query-supporting indexes                   |
 
-The files are forward-only and committed to source control. The latest local migration
-check verifies repository structure; it does not prove remote execution. An authorized
-operator must verify the live applied list before any further remote change.
+The applied remote history then adds eleven forward-only FXRP conversion, acceptance, funding,
+settlement, minimum-batch, coordinator, and slippage migrations from `20260811090210` through
+`20260811142328`. The two `20260819100558`/`20260819100721` records document and roll back an
+unintended legacy wallet bootstrap probe. `20260819103000` completes residue cleanup, and
+`20260819110000` adds the pending business invitation lifecycle.
+
+The files are forward-only and committed to source control. The local migration check verifies
+repository structure; the CLI migration list and push dry run verify remote ordering. Remote
+execution of pending migrations still requires explicit target approval and connected tests.

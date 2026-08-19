@@ -9,6 +9,7 @@ import {
 import { useEffect } from "react";
 
 import { BusinessProvider } from "@/components/business-provider";
+import { BusinessInvitations } from "@/components/business-invitations";
 import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 
@@ -120,6 +121,7 @@ function AuthenticatedDashboard() {
           Your business memberships could not be loaded. Personal account features remain available.
         </p>
       ) : null}
+      <BusinessInvitations />
       <Outlet />
     </div>
   );

@@ -12,9 +12,10 @@ Date: 2026-08-14. Scope: account separation, business context, route protection.
 - **D4 partially implemented locally:** all dashboard children are protected by one shared client
   route boundary with a safe login return path. SSR redirects remain intentionally open until the
   app adopts a server-readable cookie session.
-- **D2 remains open:** the existing owner-only UUID staff panel is not a complete invitation
-  lifecycle. Email/account resolution, invited state, acceptance/decline, role changes, and audit
-  evidence need a narrow server/RPC contract.
+- **D2 implemented locally:** direct authenticated membership writes are revoked. Owner-only,
+  audited RPCs now handle invitation by existing account email, role changes, and revocation;
+  invited members can accept or decline only their own pending invitation. Email delivery remains
+  deferred until a provider is selected.
 - **D5 remains open:** platform-role enum cleanup needs a forward migration after a live catalog
   and usage check.
 

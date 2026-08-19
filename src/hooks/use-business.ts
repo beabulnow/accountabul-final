@@ -46,6 +46,21 @@ export function useMyBusinesses() {
   });
 }
 
+export function useBusinessInvitations() {
+  const { session } = useSession();
+  const userId = session?.user.id;
+
+  return useQuery({
+    queryKey: ["business-invitations", userId],
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_my_business_invitations");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
 export function useBusinessContext() {
   const context = useContext(BusinessContext);
   if (!context) throw new Error("useBusinessContext must be used inside BusinessProvider.");

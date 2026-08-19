@@ -7,6 +7,7 @@ import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, locationLabel } from "@/lib/format";
 import { resolvePropertyMediaUrl } from "@/lib/property-media";
+import { hasPublicBusinessIdentity } from "@/lib/public-business";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -74,7 +75,11 @@ function SavedPage() {
           follows.data.map((follow) => follow.business_id),
         );
       if (profiles.error) throw profiles.error;
-      const byId = new Map((profiles.data ?? []).map((business) => [business.id, business]));
+      const byId = new Map(
+        (profiles.data ?? [])
+          .filter(hasPublicBusinessIdentity)
+          .map((business) => [business.id, business]),
+      );
       return follows.data
         .map((follow) => byId.get(follow.business_id))
         .filter((business): business is NonNullable<typeof business> => Boolean(business));
