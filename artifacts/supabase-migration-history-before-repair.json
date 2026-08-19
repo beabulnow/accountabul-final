@@ -1,0 +1,45 @@
+{
+  "projectRef": "vvrudyzeublgunlfgvlt",
+  "migrations": [
+    {
+      "version": "20260810170617",
+      "name": "accountabul_20260808085710_initial_schema",
+      "localVersion": "20260808085710"
+    },
+    {
+      "version": "20260810170622",
+      "name": "accountabul_20260808085753_secure_helpers",
+      "localVersion": "20260808085753"
+    },
+    {
+      "version": "20260810170623",
+      "name": "accountabul_20260808090750_domain_schema",
+      "localVersion": "20260808090750"
+    },
+    {
+      "version": "20260810170625",
+      "name": "accountabul_20260808090823_chat_ban_policy",
+      "localVersion": "20260808090823"
+    },
+    {
+      "version": "20260810170638",
+      "name": "accountabul_20260808114821_harden_phase_gates",
+      "localVersion": "20260808114821"
+    },
+    {
+      "version": "20260810170639",
+      "name": "accountabul_20260808115351_server_chat_gateway",
+      "localVersion": "20260808115351"
+    },
+    {
+      "version": "20260810170640",
+      "name": "accountabul_20260808120229_property_media_storage",
+      "localVersion": "20260808120229"
+    },
+    {
+      "version": "20260810171254",
+      "name": "accountabul_20260810171057_harden_private_rls_helpers",
+      "localVersion": "20260810171057"
+    }
+  ]
+}

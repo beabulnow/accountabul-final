@@ -150,7 +150,7 @@ function Field({
 export function SignedOut() {
   return (
     <div className="surface-card max-w-md p-6">
-      <h2 className="text-lg font-semibold">Sign in required</h2>
+      <h1 className="text-lg font-semibold">Sign in required</h1>
       <p className="mt-2 text-sm text-muted-foreground">This area is private to your account.</p>
       <Link
         to="/login"

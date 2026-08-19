@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PageShell } from "@/components/page-shell";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { hasPublicBusinessIdentity } from "@/lib/public-business";
 
 export const Route = createFileRoute("/businesses/")({
   head: () => ({
@@ -31,7 +32,7 @@ function BusinessesPage() {
     queryKey: ["directory", term],
     queryFn: async () => {
       let query = supabase
-        .from("businesses")
+        .from("public_businesses")
         .select(
           "id, slug, display_name, headline, primary_industry, address_city, address_state, verification_status",
         )
@@ -49,7 +50,7 @@ function BusinessesPage() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return (data ?? []).filter(hasPublicBusinessIdentity);
     },
   });
 

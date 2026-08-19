@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/format";
+import { hasPublicBusinessIdentity } from "@/lib/public-business";
 
 export const Route = createFileRoute("/businesses/$slug")({
   head: () => ({
@@ -36,7 +37,7 @@ function BusinessDetailPage() {
     queryKey: ["business", slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("businesses")
+        .from("public_businesses")
         .select(
           "id, slug, display_name, headline, description, website_url, public_email, public_phone, primary_industry, address_city, address_state, address_country, verification_status, year_founded, service_areas",
         )
@@ -45,7 +46,21 @@ function BusinessDetailPage() {
         .eq("public_profile_enabled", true)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data && hasPublicBusinessIdentity(data) ? data : null;
+    },
+  });
+
+  const credentials = useQuery({
+    queryKey: ["public-business-credentials", business.data?.id],
+    enabled: Boolean(business.data?.id),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("public_business_credentials")
+        .select("credential_type, issuing_authority, identifier, issued_at, expires_at")
+        .eq("business_id", business.data!.id)
+        .order("credential_type");
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
@@ -123,9 +138,100 @@ function BusinessDetailPage() {
         </aside>
       </div>
 
+      <FollowBusiness businessId={b.id} />
+
+      {credentials.data?.length ? (
+        <section className="surface-card mt-8 p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Approved credentials
+          </h2>
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {credentials.data.map((credential) => (
+              <li
+                key={`${credential.credential_type}-${credential.identifier ?? "none"}-${credential.issued_at ?? "undated"}`}
+                className="rounded-lg border border-border p-4 text-sm"
+              >
+                <p className="font-medium">{credential.credential_type}</p>
+                {credential.issuing_authority ? (
+                  <p className="mt-1 text-muted-foreground">{credential.issuing_authority}</p>
+                ) : null}
+                {credential.identifier ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Identifier: {credential.identifier}
+                  </p>
+                ) : null}
+                {credential.expires_at ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Expires: {credential.expires_at}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <BusinessServices businessId={b.id} />
       <BusinessListings businessId={b.id} />
     </PageShell>
+  );
+}
+
+function FollowBusiness({ businessId }: { businessId: string }) {
+  const { session } = useSession();
+  const userId = session?.user.id;
+  const queryClient = useQueryClient();
+  const following = useQuery({
+    queryKey: ["business-follow", userId, businessId],
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("business_follows")
+        .select("id")
+        .eq("user_id", userId!)
+        .eq("business_id", businessId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const toggle = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error("Sign in to follow this business.");
+      if (following.data) {
+        const { error } = await supabase
+          .from("business_follows")
+          .delete()
+          .eq("id", following.data.id);
+        if (error) throw error;
+        return false;
+      }
+      const { error } = await supabase
+        .from("business_follows")
+        .insert({ user_id: userId, business_id: businessId });
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: (active) => {
+      toast.success(active ? "Business followed." : "Business unfollowed.");
+      void queryClient.invalidateQueries({ queryKey: ["business-follow", userId, businessId] });
+      void queryClient.invalidateQueries({ queryKey: ["followed-businesses", userId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <div className="mt-6 flex flex-wrap items-center gap-3">
+      {userId ? (
+        <Button variant="outline" disabled={toggle.isPending} onClick={() => toggle.mutate()}>
+          {following.data ? "Unfollow business" : "Follow business"}
+        </Button>
+      ) : (
+        <Link to="/login" search={{}} className="text-sm font-medium text-accent underline">
+          Sign in to follow this business
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -213,6 +319,17 @@ function ServiceInquiryForm({ businessId, serviceId }: { businessId: string; ser
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  if (!session) {
+    return (
+      <p className="mt-4 text-sm text-muted-foreground">
+        <Link to="/login" search={{}} className="font-medium text-accent underline">
+          Sign in
+        </Link>{" "}
+        to request this service.
+      </p>
+    );
+  }
 
   return (
     <form

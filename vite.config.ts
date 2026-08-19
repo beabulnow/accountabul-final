@@ -6,6 +6,9 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// Keep Cloudflare builds reproducible and within the runtime shipped by pinned Wrangler.
+process.env["NITRO_COMPATIBILITY_DATE"] ??= "2026-05-27";
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).

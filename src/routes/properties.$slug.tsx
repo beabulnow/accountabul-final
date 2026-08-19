@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageShell } from "@/components/page-shell";
+import { FallbackImage } from "@/components/fallback-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, locationLabel } from "@/lib/format";
+import { resolvePropertyMediaUrl } from "@/lib/property-media";
 
 export const Route = createFileRoute("/properties/$slug")({
   head: ({ params }) => ({
@@ -44,13 +46,29 @@ function PropertyPage() {
       const { data, error } = await supabase
         .from("properties")
         .select(
-          "id, slug, title, description, property_type, address_line1, address_city, address_state, address_country, price_minor, currency, bedrooms, bathrooms, area_sqft, cover_path, business_id, businesses(display_name, slug, public_email), property_media(id, storage_path, alt_text, sort_order)",
+          "id, slug, title, description, property_type, address_line1, address_city, address_state, address_country, price_minor, currency, bedrooms, bathrooms, area_sqft, cover_path, business_id, property_media(id, storage_path, alt_text, sort_order)",
         )
         .eq("slug", slug)
         .eq("status", "published")
         .maybeSingle();
       if (error) throw error;
-      return data;
+      if (!data) return null;
+      const [{ data: business, error: businessError }, coverPath, media] = await Promise.all([
+        supabase
+          .from("public_businesses")
+          .select("id, display_name, slug, public_email")
+          .eq("id", data.business_id)
+          .maybeSingle(),
+        resolvePropertyMediaUrl(data.cover_path),
+        Promise.all(
+          (data.property_media ?? []).map(async (item) => ({
+            ...item,
+            storage_path: await resolvePropertyMediaUrl(item.storage_path),
+          })),
+        ),
+      ]);
+      if (businessError) throw businessError;
+      return { ...data, cover_path: coverPath, property_media: media, businesses: business };
     },
   });
 
@@ -124,23 +142,23 @@ function PropertyPage() {
       <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-6">
           <div className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-secondary">
-            {p.cover_path ? (
-              <img src={p.cover_path} alt={p.title} className="size-full object-cover" />
-            ) : (
-              <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
-                No photo provided for this listing
-              </div>
-            )}
+            <FallbackImage
+              src={p.cover_path}
+              alt={p.title}
+              fallback="No photo provided for this listing"
+              className="size-full object-cover"
+              loading="eager"
+            />
           </div>
 
           {media.length ? (
             <div className="grid grid-cols-3 gap-3">
               {media.map((m) => (
-                <img
+                <FallbackImage
                   key={m.id}
                   src={m.storage_path}
                   alt={m.alt_text ?? p.title}
-                  loading="lazy"
+                  fallback="Gallery image unavailable"
                   className="aspect-square w-full rounded-md object-cover"
                 />
               ))}

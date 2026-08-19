@@ -5,13 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "dev:local": "node scripts/run-with-local-env.mjs -- npm run dev -- --host 127.0.0.1 --port 4173",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build",
-    "preview": "vite preview",
+    "check": "npm run check:migrations && npm run qa:static && npm run typecheck && npm run lint && npm test && npm run build",
+    "check:migrations": "node scripts/check-migrations.mjs",
+    "preview": "wrangler dev --config .output/server/wrangler.json --local",
+    "qa:load": "node scripts/load-smoke.mjs",
+    "qa:smoke": "node scripts/smoke-routes.mjs",
+    "qa:static": "node scripts/qa-static.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "node --experimental-strip-types --test tests/stripe-webhook.test.ts",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:phase1": "node --env-file-if-exists=.env --experimental-strip-types --test tests/phase1-rls.integration.test.ts tests/phase-gates.integration.test.ts tests/business-invitations.integration.test.ts",
+    "test:phase2": "node --env-file-if-exists=.env --experimental-strip-types --test tests/storage-rls.integration.test.ts",
+    "test:phase3": "node --env-file-if-exists=.env --experimental-strip-types --test tests/chat-rls.integration.test.ts tests/event-presence.integration.test.ts",
+    "test:connected": "node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase1 && node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase2 && node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase3",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -87,6 +96,7 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "wrangler": "4.120.0"
   }
 }

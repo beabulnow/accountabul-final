@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildStripeReturnUrls } from "@/lib/stripe-webhook";
 
 type CreateTipInput = {
   eventId: string;
@@ -102,6 +103,7 @@ export const createTipIntent = createServerFn({ method: "POST" })
     }
 
     // Provider adapter: Stripe Checkout session.
+    const returnUrls = buildStripeReturnUrls(process.env["PUBLIC_SITE_URL"], tip.id);
     const body = new URLSearchParams({
       mode: "payment",
       "line_items[0][price_data][currency]": "usd",
@@ -111,8 +113,8 @@ export const createTipIntent = createServerFn({ method: "POST" })
       "metadata[tip_id]": tip.id,
       "payment_intent_data[metadata][tip_id]": tip.id,
       client_reference_id: tip.id,
-      success_url: `${process.env["PUBLIC_SITE_URL"] ?? ""}/live?tip=success`,
-      cancel_url: `${process.env["PUBLIC_SITE_URL"] ?? ""}/live?tip=canceled`,
+      success_url: returnUrls.successUrl,
+      cancel_url: returnUrls.cancelUrl,
     });
 
     const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {

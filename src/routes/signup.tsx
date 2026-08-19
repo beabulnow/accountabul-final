@@ -102,7 +102,6 @@ function SignupPage() {
     void navigate({ to: isBusiness ? "/dashboard/business" : "/dashboard", replace: true });
   }
 
-
   return (
     <PageShell
       eyebrow="Account"
@@ -115,20 +114,18 @@ function SignupPage() {
         <fieldset className="grid gap-3">
           <legend className="mb-3 text-sm font-medium">What are you signing up as?</legend>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(
-              [
-                {
-                  value: "individual" as const,
-                  label: "Individual",
-                  hint: "Browse listings, save favorites, join live rooms.",
-                },
-                {
-                  value: "business" as const,
-                  label: "Business",
-                  hint: "List properties, offer services, get verified.",
-                },
-              ]
-            ).map((option) => {
+            {[
+              {
+                value: "individual" as const,
+                label: "Individual",
+                hint: "Browse listings, save favorites, join live rooms.",
+              },
+              {
+                value: "business" as const,
+                label: "Business",
+                hint: "List properties, offer services, get verified.",
+              },
+            ].map((option) => {
               const active = accountType === option.value;
               return (
                 <button
@@ -203,11 +200,7 @@ function SignupPage() {
             />
           </div>
           <Button type="submit" disabled={busy}>
-            {busy
-              ? "Creating account…"
-              : isBusiness
-                ? "Create business account"
-                : "Create account"}
+            {busy ? "Creating account…" : isBusiness ? "Create business account" : "Create account"}
           </Button>
         </form>
 
@@ -217,12 +210,7 @@ function SignupPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <Button
-          variant="outline"
-          className="w-full gap-2"
-          onClick={handleGoogle}
-          disabled={busy}
-        >
+        <Button variant="outline" className="w-full gap-2" onClick={handleGoogle} disabled={busy}>
           <GoogleIcon />
           Continue with Google
         </Button>

@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { useMyBusiness } from "@/hooks/use-business";
+import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime } from "@/lib/format";
@@ -33,8 +33,8 @@ const statuses: LeadStatus[] = ["new", "contacted", "qualified", "won", "lost", 
 function LeadsDashboard() {
   const { session, loading } = useSession();
   const userId = session?.user.id;
-  const membership = useMyBusiness();
-  const businessId = membership.data?.business_id ?? null;
+  const { activeMembership, capabilities } = useBusinessContext();
+  const businessId = activeMembership?.business_id ?? null;
   const queryClient = useQueryClient();
 
   const leads = useQuery({
@@ -145,18 +145,20 @@ function LeadsDashboard() {
               </span>
             </div>
             <p className="mt-3 whitespace-pre-line text-sm">{lead.message}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {statuses.map((s) => (
-                <Button
-                  key={s}
-                  size="sm"
-                  variant={lead.status === s ? "secondary" : "ghost"}
-                  onClick={() => setStatus.mutate({ table: lead.table, id: lead.id, status: s })}
-                >
-                  {s}
-                </Button>
-              ))}
-            </div>
+            {capabilities.manageLeads ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {statuses.map((s) => (
+                  <Button
+                    key={s}
+                    size="sm"
+                    variant={lead.status === s ? "secondary" : "ghost"}
+                    onClick={() => setStatus.mutate({ table: lead.table, id: lead.id, status: s })}
+                  >
+                    {s}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>

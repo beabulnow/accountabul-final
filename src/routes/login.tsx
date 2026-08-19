@@ -216,12 +216,7 @@ function LoginPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <Button
-          variant="outline"
-          className="w-full gap-2"
-          onClick={handleGoogle}
-          disabled={busy}
-        >
+        <Button variant="outline" className="w-full gap-2" onClick={handleGoogle} disabled={busy}>
           <GoogleIcon />
           Continue with Google
         </Button>

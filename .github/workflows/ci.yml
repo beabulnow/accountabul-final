@@ -1,0 +1,68 @@
+name: Repository QA
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GIT_CONFIG_COUNT: 1
+      GIT_CONFIG_KEY_0: safe.directory
+      GIT_CONFIG_VALUE_0: /github/workspace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan pull request commits
+        if: github.event_name == 'pull_request'
+        uses: docker://ghcr.io/gitleaks/gitleaks:v8.24.3
+        with:
+          args: >-
+            detect
+            --source=/github/workspace
+            --redact
+            --verbose
+            --exit-code=2
+            --log-opts=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+      - name: Scan pushed commits
+        if: github.event_name == 'push'
+        uses: docker://ghcr.io/gitleaks/gitleaks:v8.24.3
+        with:
+          args: >-
+            detect
+            --source=/github/workspace
+            --redact
+            --verbose
+            --exit-code=2
+            --log-opts=${{ github.event.before }}..${{ github.sha }}
+      - name: Scan the current tree
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker://ghcr.io/gitleaks/gitleaks:v8.24.3
+        with:
+          args: >-
+            detect
+            --source=/github/workspace
+            --redact
+            --verbose
+            --exit-code=2
+            --no-git

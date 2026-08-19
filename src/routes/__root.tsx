@@ -56,6 +56,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
+            type="button"
             onClick={() => {
               router.invalidate();
               reset();
@@ -129,8 +130,14 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <div className="flex min-h-screen flex-col">
+          <a
+            href="#main-content"
+            className="sr-only z-50 rounded-md bg-background px-4 py-2 text-sm font-semibold text-foreground shadow focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+          >
+            Skip to main content
+          </a>
           <SiteHeader />
-          <main className="flex-1">
+          <main id="main-content" tabIndex={-1} className="flex-1">
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
           </main>

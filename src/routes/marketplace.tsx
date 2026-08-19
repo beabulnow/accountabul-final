@@ -3,9 +3,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { PageShell } from "@/components/page-shell";
+import { FallbackImage } from "@/components/fallback-image";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, locationLabel } from "@/lib/format";
+import { resolvePropertyMediaUrl } from "@/lib/property-media";
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
@@ -38,7 +40,7 @@ function MarketplacePage() {
       let query = supabase
         .from("properties")
         .select(
-          "id, slug, title, description, property_type, address_city, address_state, price_minor, currency, cover_path, bedrooms, bathrooms, area_sqft, businesses(display_name, slug)",
+          "id, slug, title, description, property_type, address_city, address_state, price_minor, currency, cover_path, bedrooms, bathrooms, area_sqft, business_id",
         )
         .eq("status", "published")
         .order("published_at", { ascending: false })
@@ -56,7 +58,23 @@ function MarketplacePage() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data ?? [];
+      const rows = data ?? [];
+      const businessIds = [...new Set(rows.map((row) => row.business_id))];
+      const { data: businesses, error: businessError } = businessIds.length
+        ? await supabase
+            .from("public_businesses")
+            .select("id, display_name, slug")
+            .in("id", businessIds)
+        : { data: [], error: null };
+      if (businessError) throw businessError;
+      const businessesById = new Map((businesses ?? []).map((business) => [business.id, business]));
+      return Promise.all(
+        rows.map(async (row) => ({
+          ...row,
+          cover_path: await resolvePropertyMediaUrl(row.cover_path),
+          businesses: businessesById.get(row.business_id) ?? null,
+        })),
+      );
     },
   });
 
@@ -112,18 +130,12 @@ function MarketplacePage() {
             className="surface-card group overflow-hidden transition-colors hover:border-accent"
           >
             <div className="aspect-[4/3] w-full bg-secondary">
-              {p.cover_path ? (
-                <img
-                  src={p.cover_path}
-                  alt={p.title}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              ) : (
-                <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
-                  No photo provided
-                </div>
-              )}
+              <FallbackImage
+                src={p.cover_path}
+                alt={p.title}
+                fallback="No photo provided"
+                className="size-full object-cover"
+              />
             </div>
             <div className="p-5">
               <p className="text-xs uppercase tracking-wide text-accent">

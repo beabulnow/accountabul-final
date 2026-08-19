@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import {
+  buildTipChatMessage,
   getStripeTipId,
+  isStripePaymentSuccessEvent,
   parseStripeEvent,
   planTipTransition,
   verifyStripeSignature,
@@ -59,12 +61,15 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
         if (tipId) {
           const { data: tip, error: tipError } = await supabaseAdmin
             .from("tips")
-            .select("id, amount_minor, currency, provider_record_id, status")
+            .select(
+              "id, event_id, from_user_id, amount_minor, currency, message, provider_record_id, status",
+            )
             .eq("id", tipId)
             .single();
           if (tipError) throw tipError;
 
           const transition = planTipTransition(event, tip as TipForReconciliation);
+          let finalStatus = tip.status;
           if (transition) {
             const patch =
               transition.status === "paid"
@@ -78,6 +83,7 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
               .select("id")
               .maybeSingle();
             if (updateError) throw updateError;
+            if (updated) finalStatus = transition.status;
 
             if (!updated) {
               const { data: current, error: currentError } = await supabaseAdmin
@@ -92,7 +98,31 @@ export const Route = createFileRoute("/api/public/webhooks/stripe")({
               if (current.status !== transition.status && !supersededByTerminalStatus) {
                 throw new Error("Tip status changed during Stripe reconciliation.");
               }
+              finalStatus = current.status;
             }
+          }
+
+          const tipForChat = { ...tip, status: finalStatus } as TipForReconciliation;
+          const chatBody = buildTipChatMessage(tipForChat);
+          if (
+            finalStatus === "paid" &&
+            isStripePaymentSuccessEvent(event) &&
+            chatBody &&
+            tip.event_id &&
+            tip.from_user_id
+          ) {
+            const { error: chatError } = await supabaseAdmin.from("chat_messages").upsert(
+              {
+                // A tip creates at most one chat event. Reconciliation retries reuse it.
+                id: tip.id,
+                event_id: tip.event_id,
+                user_id: tip.from_user_id,
+                kind: "tip",
+                body: chatBody,
+              },
+              { onConflict: "id", ignoreDuplicates: true },
+            );
+            if (chatError) throw chatError;
           }
         }
 

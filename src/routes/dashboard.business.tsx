@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
-import { SignedOut } from "./dashboard.profile";
 
 export const Route = createFileRoute("/dashboard/business")({
   head: () => ({
@@ -39,27 +39,28 @@ function slugify(value: string) {
 }
 
 function BusinessPage() {
-  const { session, loading } = useSession();
+  const { session } = useSession();
   const userId = session?.user.id;
   const queryClient = useQueryClient();
+  const { activeMembership, capabilities, isLoading: membershipsLoading } = useBusinessContext();
+  const businessId = activeMembership?.business_id;
 
-  const membership = useQuery({
-    queryKey: ["my-business", userId],
-    enabled: Boolean(userId),
+  const businessQuery = useQuery({
+    queryKey: ["business-dashboard-detail", businessId],
+    enabled: Boolean(businessId),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("business_members")
-        .select("membership_role, businesses(*)")
-        .eq("user_id", userId!)
-        .eq("invitation_status", "active")
-        .limit(1)
+        .from("businesses")
+        .select("*")
+        .eq("id", businessId!)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
 
-  const business = membership.data?.businesses ?? null;
+  const business = businessQuery.data ?? null;
+  const canEdit = !business || capabilities.manageBusiness;
 
   const [form, setForm] = useState({
     legal_name: "",
@@ -112,27 +113,31 @@ function BusinessPage() {
 
   const create = useMutation({
     mutationFn: async () => {
+      if (!userId) throw new Error("Sign in before creating a business.");
+      if (!form.legal_name.trim() || !form.display_name.trim()) {
+        throw new Error("Legal name and display name are required.");
+      }
       const base = slugify(form.display_name || form.legal_name);
       const slug = `${base || "business"}-${Math.random().toString(36).slice(2, 7)}`;
-      const { data, error } = await supabase
-        .from("businesses")
-        .insert({ ...form, slug, created_by: userId! })
-        .select("id")
-        .single();
-      if (error) throw error;
-
-      const { error: memberError } = await supabase.from("business_members").insert({
-        business_id: data.id,
-        user_id: userId!,
-        membership_role: "owner",
-        invitation_status: "active",
-        joined_at: new Date().toISOString(),
+      const { error } = await supabase.rpc("create_business_with_owner", {
+        _slug: slug,
+        _legal_name: form.legal_name,
+        _display_name: form.display_name,
+        ...(form.headline ? { _headline: form.headline } : {}),
+        ...(form.description ? { _description: form.description } : {}),
+        ...(form.website_url ? { _website_url: form.website_url } : {}),
+        ...(form.public_email ? { _public_email: form.public_email } : {}),
+        ...(form.public_phone ? { _public_phone: form.public_phone } : {}),
+        ...(form.primary_industry ? { _primary_industry: form.primary_industry } : {}),
+        ...(form.address_city ? { _address_city: form.address_city } : {}),
+        ...(form.address_state ? { _address_state: form.address_state } : {}),
+        ...(form.address_country ? { _address_country: form.address_country } : {}),
       });
-      if (memberError) throw memberError;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Business created. You are the owner.");
-      void queryClient.invalidateQueries({ queryKey: ["my-business"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-business-memberships"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -144,22 +149,29 @@ function BusinessPage() {
     },
     onSuccess: () => {
       toast.success("Business updated.");
-      void queryClient.invalidateQueries({ queryKey: ["my-business"] });
+      void queryClient.invalidateQueries({ queryKey: ["business-dashboard-detail", businessId] });
+      void queryClient.invalidateQueries({ queryKey: ["my-business-memberships"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!session) return <SignedOut />;
+  if (membershipsLoading || businessQuery.isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading business…</p>;
+  }
 
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold">{business ? "Your business" : "Create your business"}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {business
-          ? `Status: ${business.profile_status} · Verification: ${business.verification_status}`
+          ? `Status: ${business.profile_status} · Verification: ${business.verification_status} · Role: ${activeMembership?.membership_role.replace("_", " ")}`
           : "Creating a business makes you its owner. Only owners and managers can edit it."}
       </p>
+      {business && !canEdit ? (
+        <p role="status" className="mt-3 rounded-md border border-border bg-secondary p-3 text-sm">
+          This membership is read-only under the current business security policy.
+        </p>
+      ) : null}
 
       <form
         className="surface-card mt-6 grid gap-4 p-6"
@@ -169,92 +181,104 @@ function BusinessPage() {
           else create.mutate();
         }}
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <fieldset disabled={!canEdit} className="contents">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Legal name"
+              required
+              value={form.legal_name}
+              onChange={(v) => setForm({ ...form, legal_name: v })}
+            />
+            <Field
+              label="Display name"
+              required
+              value={form.display_name}
+              onChange={(v) => setForm({ ...form, display_name: v })}
+            />
+          </div>
           <Field
-            label="Legal name"
-            required
-            value={form.legal_name}
-            onChange={(v) => setForm({ ...form, legal_name: v })}
+            label="Headline"
+            value={form.headline}
+            onChange={(v) => setForm({ ...form, headline: v })}
           />
-          <Field
-            label="Display name"
-            required
-            value={form.display_name}
-            onChange={(v) => setForm({ ...form, display_name: v })}
-          />
-        </div>
-        <Field
-          label="Headline"
-          value={form.headline}
-          onChange={(v) => setForm({ ...form, headline: v })}
-        />
-        <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            rows={5}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field
-            label="Website"
-            value={form.website_url}
-            onChange={(v) => setForm({ ...form, website_url: v })}
-          />
-          <Field
-            label="Public email"
-            value={form.public_email}
-            onChange={(v) => setForm({ ...form, public_email: v })}
-          />
-          <Field
-            label="Public phone"
-            value={form.public_phone}
-            onChange={(v) => setForm({ ...form, public_phone: v })}
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-4">
-          <Field
-            label="Industry"
-            value={form.primary_industry}
-            onChange={(v) => setForm({ ...form, primary_industry: v })}
-          />
-          <Field
-            label="City"
-            value={form.address_city}
-            onChange={(v) => setForm({ ...form, address_city: v })}
-          />
-          <Field
-            label="State"
-            value={form.address_state}
-            onChange={(v) => setForm({ ...form, address_state: v })}
-          />
-          <Field
-            label="Country"
-            value={form.address_country}
-            onChange={(v) => setForm({ ...form, address_country: v })}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={create.isPending || update.isPending}>
-            {business ? "Save business" : "Create business"}
-          </Button>
-          {business && business.profile_status === "draft" ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                update.mutate({ profile_status: "pending_review", verification_status: "pending" })
-              }
-            >
-              Submit for review
-            </Button>
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              rows={5}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field
+              label="Website"
+              value={form.website_url}
+              onChange={(v) => setForm({ ...form, website_url: v })}
+            />
+            <Field
+              label="Public email"
+              value={form.public_email}
+              onChange={(v) => setForm({ ...form, public_email: v })}
+            />
+            <Field
+              label="Public phone"
+              value={form.public_phone}
+              onChange={(v) => setForm({ ...form, public_phone: v })}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-4">
+            <Field
+              label="Industry"
+              value={form.primary_industry}
+              onChange={(v) => setForm({ ...form, primary_industry: v })}
+            />
+            <Field
+              label="City"
+              value={form.address_city}
+              onChange={(v) => setForm({ ...form, address_city: v })}
+            />
+            <Field
+              label="State"
+              value={form.address_state}
+              onChange={(v) => setForm({ ...form, address_state: v })}
+            />
+            <Field
+              label="Country"
+              value={form.address_country}
+              onChange={(v) => setForm({ ...form, address_country: v })}
+            />
+          </div>
+          {canEdit ? (
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={create.isPending || update.isPending}>
+                {business ? "Save business" : "Create business"}
+              </Button>
+              {business && business.profile_status === "draft" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    update.mutate({
+                      profile_status: "pending_review",
+                      verification_status: "pending",
+                    })
+                  }
+                >
+                  Submit for review
+                </Button>
+              ) : null}
+            </div>
           ) : null}
-        </div>
+        </fieldset>
       </form>
 
-      {business ? <CredentialsPanel businessId={business.id} /> : null}
+      {business && capabilities.manageBusiness ? (
+        <CredentialsPanel businessId={business.id} />
+      ) : null}
+      {business ? (
+        <StaffPanel businessId={business.id} canManage={capabilities.manageMembers} />
+      ) : null}
     </div>
   );
 }
@@ -341,6 +365,161 @@ function CredentialsPanel({ businessId }: { businessId: string }) {
           </Button>
         </div>
       </form>
+    </section>
+  );
+}
+
+function StaffPanel({ businessId, canManage }: { businessId: string; canManage: boolean }) {
+  const queryClient = useQueryClient();
+  const [memberEmail, setMemberEmail] = useState("");
+  const [role, setRole] = useState<"manager" | "listing_manager" | "lead_manager" | "viewer">(
+    "viewer",
+  );
+  const members = useQuery({
+    queryKey: ["business-staff", businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("business_members")
+        .select("id, user_id, membership_role, invitation_status, joined_at")
+        .eq("business_id", businessId)
+        .order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const addMember = useMutation({
+    mutationFn: async () => {
+      if (!memberEmail.trim() || !memberEmail.includes("@")) {
+        throw new Error("Enter the member's Accountabul email.");
+      }
+      const { error } = await supabase.rpc("invite_business_member", {
+        _business_id: businessId,
+        _email: memberEmail.trim(),
+        _role: role,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setMemberEmail("");
+      toast.success("Invitation created. The member will see it after signing in.");
+      void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const changeRole = useMutation({
+    mutationFn: async ({ id, nextRole }: { id: string; nextRole: typeof role }) => {
+      const { error } = await supabase.rpc("update_business_member_role", {
+        _membership_id: id,
+        _role: nextRole,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Staff role updated.");
+      void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const revokeMember = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("revoke_business_member", {
+        _membership_id: id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Staff access revoked.");
+      void queryClient.invalidateQueries({ queryKey: ["business-staff", businessId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <section className="surface-card mt-6 p-6">
+      <h2 className="text-lg font-semibold">Staff access</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Owners can invite an existing Accountabul member by account email and assign least-privilege
+        access. Invitations appear in the member's dashboard.
+      </p>
+      <ul className="mt-4 space-y-2 text-sm">
+        {members.data?.map((member) => (
+          <li
+            key={member.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3"
+          >
+            <span>{member.user_id.slice(0, 8)}…</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {canManage &&
+              member.membership_role !== "owner" &&
+              member.invitation_status !== "revoked" ? (
+                <select
+                  aria-label={`Role for member ${member.user_id.slice(0, 8)}`}
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                  value={member.membership_role}
+                  disabled={changeRole.isPending}
+                  onChange={(event) =>
+                    changeRole.mutate({
+                      id: member.id,
+                      nextRole: event.target.value as typeof role,
+                    })
+                  }
+                >
+                  <option value="manager">Manager</option>
+                  <option value="listing_manager">Listing manager</option>
+                  <option value="lead_manager">Lead manager</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              ) : (
+                <span>{member.membership_role.replace("_", " ")}</span>
+              )}
+              <span className="text-muted-foreground">{member.invitation_status}</span>
+              {canManage &&
+              member.membership_role !== "owner" &&
+              member.invitation_status !== "revoked" ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={revokeMember.isPending}
+                  onClick={() => revokeMember.mutate(member.id)}
+                >
+                  Revoke
+                </Button>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+      {canManage ? (
+        <form
+          className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
+          onSubmit={(event) => {
+            event.preventDefault();
+            addMember.mutate();
+          }}
+        >
+          <Input
+            type="email"
+            value={memberEmail}
+            onChange={(event) => setMemberEmail(event.target.value)}
+            placeholder="member@example.com"
+            aria-label="Existing member account email"
+          />
+          <select
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            value={role}
+            onChange={(event) => setRole(event.target.value as typeof role)}
+            aria-label="Staff role"
+          >
+            <option value="manager">Manager</option>
+            <option value="listing_manager">Listing manager</option>
+            <option value="lead_manager">Lead manager</option>
+            <option value="viewer">Viewer</option>
+          </select>
+          <Button type="submit" disabled={addMember.isPending || !memberEmail.trim()}>
+            Invite staff
+          </Button>
+        </form>
+      ) : null}
     </section>
   );
 }

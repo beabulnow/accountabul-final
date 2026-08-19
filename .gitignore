@@ -7,6 +7,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Local environment files. Commit only the redacted example.
+.env
+.env.*
+!.env.example
+
 node_modules
 dist
 dist-ssr
@@ -19,6 +24,9 @@ dist-ssr
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Supabase CLI local cache
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

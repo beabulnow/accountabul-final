@@ -1,0 +1,23 @@
+{
+  "sourceSystem": "fixture-crm",
+  "records": [
+    {
+      "legacyId": "business-100",
+      "targetTable": "businesses",
+      "data": {
+        "slug": "fixture-business",
+        "legal_name": "Fixture Business LLC",
+        "display_name": "Fixture Business"
+      }
+    },
+    {
+      "legacyId": "service-200",
+      "targetTable": "services",
+      "data": {
+        "business_id": "00000000-0000-4000-8000-000000000001",
+        "slug": "fixture-service",
+        "name": "Fixture Service"
+      }
+    }
+  ]
+}

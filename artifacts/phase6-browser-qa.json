@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-08-08T08:39:49-05:00",
+  "baseUrl": "http://127.0.0.1:3014",
+  "browser": "Codex in-app Chromium browser",
+  "authState": "signed-out",
+  "routes": 18,
+  "viewports": [
+    { "width": 360, "height": 800, "passed": 18, "failed": 0 },
+    { "width": 768, "height": 1024, "passed": 18, "failed": 0 },
+    { "width": 1440, "height": 900, "passed": 18, "failed": 0 }
+  ],
+  "summary": {
+    "checks": 54,
+    "passed": 54,
+    "failed": 0,
+    "consoleWarningsOrErrors": 0,
+    "documentOverflowFailures": 0,
+    "clippedInteractiveControlFailures": 0,
+    "undersizedInteractiveTargetFailures": 0,
+    "routeErrorShellFailures": 0
+  },
+  "interactionChecks": [
+    {
+      "name": "mobile navigation",
+      "pass": true,
+      "detail": "Menu aria-expanded changed from false to true and all seven destinations were exposed."
+    },
+    {
+      "name": "intentional missing event",
+      "pass": true,
+      "detail": "The live route settled on the Event not found state with a return link."
+    },
+    {
+      "name": "intentional missing business",
+      "pass": true,
+      "detail": "The business route settled on the Business not available state with a return link."
+    },
+    {
+      "name": "private-route signed-out heading",
+      "pass": true,
+      "detail": "The shared Sign in required state exposes one page-level heading."
+    }
+  ],
+  "defectsClosed": [
+    "Dashboard destinations no longer require horizontal scrolling at 360px.",
+    "The shared signed-out private-route state now starts with an h1."
+  ],
+  "notCovered": [
+    "authenticated member, business staff, moderator, and admin states",
+    "Firefox, Safari, and Edge",
+    "real screen-reader validation",
+    "deployed provider and monitoring integrations"
+  ]
+}

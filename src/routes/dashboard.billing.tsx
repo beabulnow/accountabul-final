@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime, formatMoney } from "@/lib/format";
@@ -26,6 +27,8 @@ export const Route = createFileRoute("/dashboard/billing")({
 
 function DashboardBilling() {
   const { session, loading } = useSession();
+  const { activeMembership } = useBusinessContext();
+  const businessId = activeMembership?.business_id;
 
   const sent = useQuery({
     queryKey: ["tips-sent", session?.user.id],
@@ -45,21 +48,13 @@ function DashboardBilling() {
   });
 
   const received = useQuery({
-    queryKey: ["tips-received", session?.user.id],
-    enabled: Boolean(session?.user.id),
+    queryKey: ["tips-received", businessId],
+    enabled: Boolean(businessId),
     queryFn: async () => {
-      const { data: membership } = await supabase
-        .from("business_members")
-        .select("business_id")
-        .eq("user_id", session!.user.id)
-        .eq("invitation_status", "active")
-        .limit(1)
-        .maybeSingle();
-      if (!membership) return [];
       const { data, error } = await supabase
         .from("tips")
         .select("id, amount_minor, currency, status, message, created_at, paid_at")
-        .eq("to_business_id", membership.business_id)
+        .eq("to_business_id", businessId!)
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;

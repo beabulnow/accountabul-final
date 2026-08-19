@@ -1,7 +1,11 @@
 # Canonical Schema — Accountabul Platform Production
 
-Phase 0 deliverable: schema diagram + migration skeleton. **No migration has been run.**
-The first migration executes in Phase 1 after the RLS threat model is signed off.
+Originally authored as the Phase 0 schema plan. The repository now contains the committed
+Phase 1-5 schema foundation plus the testnet FXRP acceptance and batching contracts. On
+2026-08-19, the authorized CLI reconciled Supabase project `vvrudyzeublgunlfgvlt` and applied all
+25 repository migrations normally. Remote and local migration history now match, including cleanup
+of an unintended probe function, secure business member invitations, and aggregate event presence
+hardening.
 
 ## Conventions (non-negotiable)
 
@@ -68,8 +72,9 @@ migration_batches ──< migration_record_map
   `created_by`, timestamps, `published_at`.
 - **`business_members`** — `id`, `business_id`, `user_id`, `membership_role`
   (`owner|manager|listing_manager|lead_manager|viewer`), `permissions`,
-  `invitation_status`, `invited_by`, `joined_at`, timestamps. An owner may grant only
-  within their own business.
+  `invitation_status`, `invited_by`, `joined_at`, timestamps. Direct authenticated writes are
+  removed; owner invitation, role change, and revocation plus invited-member acceptance/decline
+  cross narrow audited RPCs.
 - **`business_credentials`** — private verification artifacts plus a
   `public_display_approved` flag. Documents and private notes are never client-readable.
 
@@ -92,8 +97,9 @@ migration_batches ──< migration_record_map
   (`scheduled|live|ended|canceled|replay_available`), `provider`,
   `provider_account_id`, `provider_record_id`, `replay_url_path`, moderation settings.
 - **`event_reminders`**, **`event_presence`**, **`chat_messages`**,
-  **`chat_moderation_actions`** — chat writes always pass through the server; bans and
-  roles are enforced server-side and cannot be forged by a client.
+  **`chat_moderation_actions`** — presence is exposed only as a recent aggregate count through an
+  authenticated heartbeat RPC; chat writes always pass through the server; bans and roles are
+  enforced server-side and cannot be forged by a client.
 
 ### Money
 
@@ -102,6 +108,10 @@ migration_batches ──< migration_record_map
   `provider_record_id`, `idempotency_key` (unique), timestamps.
 - **`payment_events`** — raw-but-redacted provider event ledger with a unique
   `(provider, provider_event_id)` so repeated webhooks create exactly one paid tip.
+- **FXRP testnet acceptance** — `fxrp_conversion_runs`, signer nonces, XRP acceptance policies,
+  assets, invoices, reservations, minimum batches, and batch members. The migration series binds
+  funding sender, acceptance policy, nonce reservation, settlement authorization, slippage, and
+  automated batch coordination. It is explicitly testnet-only and stores no wallet secrets.
 
 ### Operations
 
@@ -117,7 +127,10 @@ unique indexes on all slugs; `chat_messages (event_id, created_at)`;
 `tips (provider, provider_record_id)` unique; `payment_events (provider, provider_event_id)`
 unique. Verify with `EXPLAIN (ANALYZE, BUFFERS)` on representative data before launch.
 
-## Migration skeleton (order, not yet executed)
+## Logical schema groups
+
+These identifiers preserve the original design sequence. They are planning labels, not the
+names of the physical migration files.
 
 1. `0001_extensions_and_enums`
 2. `0002_profiles_and_user_roles` (+ `has_role` security-definer function)
@@ -131,5 +144,26 @@ unique. Verify with `EXPLAIN (ANALYZE, BUFFERS)` on representative data before l
 10. `0010_audit_log`
 11. `0011_migration_mapping_tables`
 
-Each migration is forward-only, contains its GRANTs and RLS policies inline, and is
-committed to source control.
+The original logical groups were consolidated into these nine timestamped Supabase migrations:
+
+| Committed migration                                       | Responsibility                                                                   |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `20260808085710_b0401a1b-a290-407c-b3d5-fdcc05e0f8a1.sql` | Identity, roles, businesses, membership, and credentials                         |
+| `20260808085753_bf5c208e-bab2-43ec-a2ff-c5f58b1affb2.sql` | Helper-function execution grants                                                 |
+| `20260808090750_64733fdb-925f-455e-9b95-382cfd446dbd.sql` | Marketplace, services, events, chat, tips, audit, and migration tables           |
+| `20260808090823_c70b1fad-4979-4347-8df2-0d358e17d7e9.sql` | Chat-ban enforcement                                                             |
+| `20260808114821_harden_phase_1_to_3_gates.sql`            | Phase 1-3 public projections, lifecycle rules, RPCs, and authorization hardening |
+| `20260808115351_server_chat_gateway.sql`                  | Server-mediated chat and atomic rate limiting                                    |
+| `20260808120229_property_media_storage.sql`               | Private property-media bucket and object policies                                |
+| `20260810171057_harden_private_rls_helpers.sql`           | Private helper isolation, security-invoker projections, and explicit privileges  |
+| `20260811065051_optimize_rls_and_fk_indexes.sql`          | RLS plan optimization and foreign-key/query-supporting indexes                   |
+
+The applied remote history then adds eleven forward-only FXRP conversion, acceptance, funding,
+settlement, minimum-batch, coordinator, and slippage migrations from `20260811090210` through
+`20260811142328`. The two `20260819100558`/`20260819100721` records document and roll back an
+unintended legacy wallet bootstrap probe. `20260819103000` completes residue cleanup, and
+`20260819110000` adds the pending business invitation lifecycle.
+
+The files are forward-only and committed to source control. The local migration check verifies
+repository structure; the CLI migration list and push dry run verify remote ordering. Remote
+execution of pending migrations still requires explicit target approval and connected tests.
