@@ -5,6 +5,27 @@
 complete safely without the account owner. Do not paste secrets into GitHub, Lovable chat,
 source files, screenshots, or this document.
 
+## Status update — 2026-08-19
+
+- [x] Local Git access is working for the final repository,
+      `beabulnow/accountabul-final`.
+- [x] Latest `origin/main` and Lovable account/signup changes were reconciled into
+      `codex/final-build-recovery-20260818` without rewriting published history.
+- [x] The full credential-free quality gate passes after reconciliation and active-business
+      context implementation.
+- [ ] In a normal browser, while signed out, open
+      `/dashboard/properties?business=not-authorized` and confirm it redirects to
+      `/login?redirect=...`. Automated localhost browser control disconnected during this transition;
+      the route logic, typecheck, static QA, tests, and production build pass.
+- [ ] With two business memberships on a dedicated test account, switch the **Active business**
+      selector and confirm the `business` URL value, overview, listings, services, leads, and received
+      billing all change together.
+- [ ] With a `viewer` membership, confirm business, listing, service, and lead write controls are
+      absent while read access remains available.
+
+The older property-platform access items below are historical source-reconciliation notes and are
+not blockers for work in the final repository.
+
 ## Required before connected implementation/QA
 
 - [ ] **Authorize local Git access to the primary base repository.**
@@ -50,28 +71,28 @@ source files, screenshots, or this document.
 ## Restream setup
 
 - [ ] Confirm the Restream subscription supports the **Website Video Player**
-  (Business or custom Enterprise as of 2026-08-18).
+      (Business or custom Enterprise as of 2026-08-18).
 - [ ] In Restream, add an **Embed Player** channel and select a responsive player.
 - [ ] Copy the generated iframe embed code into the approved secret/config handoff.
   - Codex needs the iframe `src`/channel URL, not your Restream password.
   - The embed code remains stable for the player channel.
 - [ ] Confirm whether the player should display its viewer counter and which offline
-  thumbnail should be shown.
+      thumbnail should be shown.
 - [ ] Confirm whether anonymous visitors may read live chat. Writing chat will require
-  sign-in unless explicitly changed after a moderation/privacy review.
+      sign-in unless explicitly changed after a moderation/privacy review.
 - [ ] If automated Restream event scheduling is required later, create an approved OAuth/API
-  application separately. The basic website-player embed does not require an API key.
+      application separately. The basic website-player embed does not require an API key.
 
 ## Product and legal decisions
 
 - [ ] Approve the two-day core scope in `docs/PLATFORM_RECOVERY_PLAN_2026-08-18.md`.
 - [ ] Decide whether the public directory label is **Businesses**, **Vendors**, or
-  **Professionals & Services**. The database should have one canonical business identity.
+      **Professionals & Services**. The database should have one canonical business identity.
 - [ ] Decide whether public live rooms are readable by everyone or only signed-in members.
 - [ ] Identify the administrator(s) by account/user ID for a controlled role migration.
-  Do not use email addresses as the final authorization mechanism.
+      Do not use email addresses as the final authorization mechanism.
 - [ ] Obtain legal/compliance review before enabling mainnet tokenization, secondary trading,
-  custody, yield, investment-return claims, KYC approval automation, or escrow settlement.
+      custody, yield, investment-return claims, KYC approval automation, or escrow settlement.
 
 ## Final launch evidence requiring the account owner
 
@@ -80,4 +101,4 @@ source files, screenshots, or this document.
 - [ ] Verify Stripe/provider webhook secrets and replay-safe delivery in provider dashboards.
 - [ ] Exercise personal, business, and admin accounts using dedicated test identities.
 - [ ] Review and approve public legal copy, privacy policy, terms, financial disclaimers,
-  and data-retention policy.
+      and data-retention policy.

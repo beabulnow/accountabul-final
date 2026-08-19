@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
-import { SignedOut } from "./dashboard.profile";
 
 export const Route = createFileRoute("/dashboard/business")({
   head: () => ({
@@ -39,27 +39,28 @@ function slugify(value: string) {
 }
 
 function BusinessPage() {
-  const { session, loading } = useSession();
+  const { session } = useSession();
   const userId = session?.user.id;
   const queryClient = useQueryClient();
+  const { activeMembership, capabilities, isLoading: membershipsLoading } = useBusinessContext();
+  const businessId = activeMembership?.business_id;
 
-  const membership = useQuery({
-    queryKey: ["my-business", userId],
-    enabled: Boolean(userId),
+  const businessQuery = useQuery({
+    queryKey: ["business-dashboard-detail", businessId],
+    enabled: Boolean(businessId),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("business_members")
-        .select("membership_role, businesses(*)")
-        .eq("user_id", userId!)
-        .eq("invitation_status", "active")
-        .limit(1)
+        .from("businesses")
+        .select("*")
+        .eq("id", businessId!)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
   });
 
-  const business = membership.data?.businesses ?? null;
+  const business = businessQuery.data ?? null;
+  const canEdit = !business || capabilities.manageBusiness;
 
   const [form, setForm] = useState({
     legal_name: "",
@@ -136,7 +137,7 @@ function BusinessPage() {
     },
     onSuccess: () => {
       toast.success("Business created. You are the owner.");
-      void queryClient.invalidateQueries({ queryKey: ["my-business"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-business-memberships"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -148,22 +149,29 @@ function BusinessPage() {
     },
     onSuccess: () => {
       toast.success("Business updated.");
-      void queryClient.invalidateQueries({ queryKey: ["my-business"] });
+      void queryClient.invalidateQueries({ queryKey: ["business-dashboard-detail", businessId] });
+      void queryClient.invalidateQueries({ queryKey: ["my-business-memberships"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!session) return <SignedOut />;
+  if (membershipsLoading || businessQuery.isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading business…</p>;
+  }
 
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold">{business ? "Your business" : "Create your business"}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {business
-          ? `Status: ${business.profile_status} · Verification: ${business.verification_status}`
+          ? `Status: ${business.profile_status} · Verification: ${business.verification_status} · Role: ${activeMembership?.membership_role.replace("_", " ")}`
           : "Creating a business makes you its owner. Only owners and managers can edit it."}
       </p>
+      {business && !canEdit ? (
+        <p role="status" className="mt-3 rounded-md border border-border bg-secondary p-3 text-sm">
+          This membership is read-only under the current business security policy.
+        </p>
+      ) : null}
 
       <form
         className="surface-card mt-6 grid gap-4 p-6"
@@ -173,97 +181,106 @@ function BusinessPage() {
           else create.mutate();
         }}
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <fieldset disabled={!canEdit} className="contents">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Legal name"
+              required
+              value={form.legal_name}
+              onChange={(v) => setForm({ ...form, legal_name: v })}
+            />
+            <Field
+              label="Display name"
+              required
+              value={form.display_name}
+              onChange={(v) => setForm({ ...form, display_name: v })}
+            />
+          </div>
           <Field
-            label="Legal name"
-            required
-            value={form.legal_name}
-            onChange={(v) => setForm({ ...form, legal_name: v })}
+            label="Headline"
+            value={form.headline}
+            onChange={(v) => setForm({ ...form, headline: v })}
           />
-          <Field
-            label="Display name"
-            required
-            value={form.display_name}
-            onChange={(v) => setForm({ ...form, display_name: v })}
-          />
-        </div>
-        <Field
-          label="Headline"
-          value={form.headline}
-          onChange={(v) => setForm({ ...form, headline: v })}
-        />
-        <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            rows={5}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field
-            label="Website"
-            value={form.website_url}
-            onChange={(v) => setForm({ ...form, website_url: v })}
-          />
-          <Field
-            label="Public email"
-            value={form.public_email}
-            onChange={(v) => setForm({ ...form, public_email: v })}
-          />
-          <Field
-            label="Public phone"
-            value={form.public_phone}
-            onChange={(v) => setForm({ ...form, public_phone: v })}
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-4">
-          <Field
-            label="Industry"
-            value={form.primary_industry}
-            onChange={(v) => setForm({ ...form, primary_industry: v })}
-          />
-          <Field
-            label="City"
-            value={form.address_city}
-            onChange={(v) => setForm({ ...form, address_city: v })}
-          />
-          <Field
-            label="State"
-            value={form.address_state}
-            onChange={(v) => setForm({ ...form, address_state: v })}
-          />
-          <Field
-            label="Country"
-            value={form.address_country}
-            onChange={(v) => setForm({ ...form, address_country: v })}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={create.isPending || update.isPending}>
-            {business ? "Save business" : "Create business"}
-          </Button>
-          {business && business.profile_status === "draft" ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                update.mutate({ profile_status: "pending_review", verification_status: "pending" })
-              }
-            >
-              Submit for review
-            </Button>
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              rows={5}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field
+              label="Website"
+              value={form.website_url}
+              onChange={(v) => setForm({ ...form, website_url: v })}
+            />
+            <Field
+              label="Public email"
+              value={form.public_email}
+              onChange={(v) => setForm({ ...form, public_email: v })}
+            />
+            <Field
+              label="Public phone"
+              value={form.public_phone}
+              onChange={(v) => setForm({ ...form, public_phone: v })}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-4">
+            <Field
+              label="Industry"
+              value={form.primary_industry}
+              onChange={(v) => setForm({ ...form, primary_industry: v })}
+            />
+            <Field
+              label="City"
+              value={form.address_city}
+              onChange={(v) => setForm({ ...form, address_city: v })}
+            />
+            <Field
+              label="State"
+              value={form.address_state}
+              onChange={(v) => setForm({ ...form, address_state: v })}
+            />
+            <Field
+              label="Country"
+              value={form.address_country}
+              onChange={(v) => setForm({ ...form, address_country: v })}
+            />
+          </div>
+          {canEdit ? (
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={create.isPending || update.isPending}>
+                {business ? "Save business" : "Create business"}
+              </Button>
+              {business && business.profile_status === "draft" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    update.mutate({
+                      profile_status: "pending_review",
+                      verification_status: "pending",
+                    })
+                  }
+                >
+                  Submit for review
+                </Button>
+              ) : null}
+            </div>
           ) : null}
-        </div>
+        </fieldset>
       </form>
 
-      {business ? <CredentialsPanel businessId={business.id} /> : null}
+      {business && capabilities.manageBusiness ? (
+        <CredentialsPanel businessId={business.id} />
+      ) : null}
       {business ? (
         <StaffPanel
           businessId={business.id}
           currentUserId={userId!}
-          canManage={membership.data?.membership_role === "owner"}
+          canManage={capabilities.manageMembers}
         />
       ) : null}
     </div>

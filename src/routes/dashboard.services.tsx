@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useMyBusiness } from "@/hooks/use-business";
+import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, parseMoneyToMinor, uniqueSlug } from "@/lib/format";
@@ -44,8 +44,9 @@ const emptyDraft = {
 function ServicesDashboard() {
   const { session, loading } = useSession();
   const userId = session?.user.id;
-  const membership = useMyBusiness();
-  const businessId = membership.data?.business_id ?? null;
+  const { activeMembership, capabilities } = useBusinessContext();
+  const businessId = activeMembership?.business_id ?? null;
+  const canManage = capabilities.manageListings;
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState(emptyDraft);
 
@@ -131,77 +132,86 @@ function ServicesDashboard() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-      <form
-        className="surface-card space-y-3 p-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          createService.mutate();
-        }}
-      >
-        <h1 className="text-lg font-semibold">New service</h1>
-        <div>
-          <Label htmlFor="name">Service name</Label>
-          <Input
-            id="name"
-            value={draft.name}
-            onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="category">Category</Label>
-          <Input
-            id="category"
-            value={draft.category}
-            onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+      {canManage ? (
+        <form
+          className="surface-card space-y-3 p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            createService.mutate();
+          }}
+        >
+          <h1 className="text-lg font-semibold">New service</h1>
           <div>
-            <Label htmlFor="price">Price (USD)</Label>
+            <Label htmlFor="name">Service name</Label>
             <Input
-              id="price"
-              value={draft.price}
-              onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+              id="name"
+              value={draft.name}
+              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
             />
           </div>
           <div>
-            <Label htmlFor="price_note">Price note</Label>
+            <Label htmlFor="category">Category</Label>
             <Input
-              id="price_note"
-              value={draft.price_note}
-              onChange={(e) => setDraft({ ...draft, price_note: e.target.value })}
+              id="category"
+              value={draft.category}
+              onChange={(e) => setDraft({ ...draft, category: e.target.value })}
             />
           </div>
-        </div>
-        <div>
-          <Label htmlFor="summary">Summary</Label>
-          <Input
-            id="summary"
-            value={draft.summary}
-            onChange={(e) => setDraft({ ...draft, summary: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            rows={4}
-            value={draft.description}
-            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="service_areas">Service areas (comma separated)</Label>
-          <Input
-            id="service_areas"
-            value={draft.service_areas}
-            onChange={(e) => setDraft({ ...draft, service_areas: e.target.value })}
-          />
-        </div>
-        <Button type="submit" disabled={createService.isPending}>
-          {createService.isPending ? "Saving…" : "Create service"}
-        </Button>
-      </form>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="price">Price (USD)</Label>
+              <Input
+                id="price"
+                value={draft.price}
+                onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="price_note">Price note</Label>
+              <Input
+                id="price_note"
+                value={draft.price_note}
+                onChange={(e) => setDraft({ ...draft, price_note: e.target.value })}
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="summary">Summary</Label>
+            <Input
+              id="summary"
+              value={draft.summary}
+              onChange={(e) => setDraft({ ...draft, summary: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              rows={4}
+              value={draft.description}
+              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="service_areas">Service areas (comma separated)</Label>
+            <Input
+              id="service_areas"
+              value={draft.service_areas}
+              onChange={(e) => setDraft({ ...draft, service_areas: e.target.value })}
+            />
+          </div>
+          <Button type="submit" disabled={createService.isPending}>
+            {createService.isPending ? "Saving…" : "Create service"}
+          </Button>
+        </form>
+      ) : (
+        <section className="surface-card p-6">
+          <h1 className="text-lg font-semibold">Read-only service access</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your current business role can view services but cannot create or change them.
+          </p>
+        </section>
+      )}
 
       <section className="surface-card p-6">
         <h2 className="text-lg font-semibold">Your services</h2>
@@ -223,7 +233,7 @@ function ServicesDashboard() {
                 </p>
               </div>
               <div className="flex gap-2">
-                {s.status === "draft" || s.status === "rejected" ? (
+                {canManage && (s.status === "draft" || s.status === "rejected") ? (
                   <Button
                     size="sm"
                     variant="secondary"
@@ -231,7 +241,7 @@ function ServicesDashboard() {
                   >
                     Submit for review
                   </Button>
-                ) : s.status === "archived" ? (
+                ) : canManage && s.status === "archived" ? (
                   <Button
                     size="sm"
                     variant="ghost"
@@ -240,13 +250,15 @@ function ServicesDashboard() {
                     Restore draft
                   </Button>
                 ) : null}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setStatus.mutate({ id: s.id, status: "archived" })}
-                >
-                  Archive
-                </Button>
+                {canManage && s.status !== "archived" ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setStatus.mutate({ id: s.id, status: "archived" })}
+                  >
+                    Archive
+                  </Button>
+                ) : null}
               </div>
             </li>
           ))}

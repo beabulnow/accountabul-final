@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { useProfile, useRoles, useSession } from "@/hooks/use-session";
-import { supabase } from "@/integrations/supabase/client";
-import { SignedOut } from "./dashboard.profile";
+import { useBusinessContext } from "@/hooks/use-business";
+import { useProfile, useRoles } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({
@@ -21,30 +19,11 @@ export const Route = createFileRoute("/dashboard/")({
 });
 
 function DashboardHome() {
-  const { session, loading } = useSession();
   const profile = useProfile();
   const roles = useRoles();
-
-  const business = useQuery({
-    queryKey: ["my-business", session?.user.id],
-    enabled: Boolean(session?.user.id),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("business_members")
-        .select("membership_role, businesses(*)")
-        .eq("user_id", session!.user.id)
-        .eq("invitation_status", "active")
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!session) return <SignedOut />;
-
-  const b = business.data?.businesses ?? null;
+  const { activeMembership } = useBusinessContext();
+  const b = activeMembership?.business ?? null;
+  const businessId = activeMembership?.business_id;
 
   return (
     <div>
@@ -65,6 +44,7 @@ function DashboardHome() {
           }
           to="/dashboard/profile"
           cta="Edit profile"
+          businessId={businessId}
         />
         <Card
           title="Business"
@@ -75,24 +55,28 @@ function DashboardHome() {
           }
           to="/dashboard/business"
           cta={b ? "Manage business" : "Create business"}
+          businessId={businessId}
         />
         <Card
           title="Listings"
           body="Publish and update the properties your business represents."
           to="/dashboard/properties"
           cta="Manage listings"
+          businessId={businessId}
         />
         <Card
           title="Leads"
           body="Track inbound property and service inquiries."
           to="/dashboard/leads"
           cta="Open leads"
+          businessId={businessId}
         />
         <Card
           title="Billing"
           body="Review tips sent and confirmed tips your business received."
           to="/dashboard/billing"
           cta="View billing"
+          businessId={businessId}
         />
         <Card
           title="Directory"
@@ -105,13 +89,29 @@ function DashboardHome() {
   );
 }
 
-function Card({ title, body, to, cta }: { title: string; body: string; to: string; cta: string }) {
+function Card({
+  title,
+  body,
+  to,
+  cta,
+  businessId,
+}: {
+  title: string;
+  body: string;
+  to: string;
+  cta: string;
+  businessId?: string | undefined;
+}) {
   return (
     <section className="surface-card p-5">
       <h2 className="font-display text-base font-semibold">{title}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{body}</p>
       <Link
         to={to}
+        search={(previous) => {
+          const { business: _business, ...rest } = previous;
+          return businessId ? { ...rest, business: businessId } : rest;
+        }}
         className="mt-4 inline-flex text-sm font-medium text-accent underline-offset-4 hover:underline"
       >
         {cta}

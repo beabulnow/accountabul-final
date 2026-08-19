@@ -1,7 +1,25 @@
 # Architecture Audit — Account Model and Access Boundaries
 
 Date: 2026-08-14. Scope: account separation, business context, route protection.
-Read-only audit. No code changed.
+
+## Implementation status — 2026-08-19
+
+- **D1 implemented locally:** the dashboard now has one plural membership query, a URL-backed
+  active-business provider, a switcher, stable fallback selection, and shared business scoping for
+  overview, business, listings, services, leads, and received billing.
+- **D3 implemented locally:** capability helpers mirror current RLS. Owners and managers receive
+  the currently supported write controls; other business roles receive read-only UI.
+- **D4 partially implemented locally:** all dashboard children are protected by one shared client
+  route boundary with a safe login return path. SSR redirects remain intentionally open until the
+  app adopts a server-readable cookie session.
+- **D2 remains open:** the existing owner-only UUID staff panel is not a complete invitation
+  lifecycle. Email/account resolution, invited state, acceptance/decline, role changes, and audit
+  evidence need a narrow server/RPC contract.
+- **D5 remains open:** platform-role enum cleanup needs a forward migration after a live catalog
+  and usage check.
+
+The implementation contract and acceptance criteria are in
+`docs/ACCOUNT_CONTEXT_IMPLEMENTATION.md`.
 
 ## Headline finding
 
@@ -13,7 +31,7 @@ Postgres already has the right shape:
 - `user_roles` — platform-wide roles (`member`, `moderator`, `admin`, …)
 - `businesses` — the organization, an entity of its own
 - `business_members` — junction table, `(business_id, user_id, membership_role,
-  invitation_status)`, so a person can belong to many businesses and a business can have
+invitation_status)`, so a person can belong to many businesses and a business can have
   many people, each with a different role (`owner|manager|listing_manager|lead_manager|viewer`)
 
 The frontend collapses all of that back into "one user = one business". Every business
@@ -32,7 +50,7 @@ them — and there is no UI anywhere to discover, create, or switch to the other
 
 Three independent, copy-pasted single-business queries:
 
-- `src/hooks/use-business.tsx:15-24`
+- `src/hooks/use-business.ts:15-45` (resolved by plural query and provider)
 - `src/routes/dashboard.business.tsx:46-59`
 - `src/routes/dashboard.index.tsx:28-41`
 

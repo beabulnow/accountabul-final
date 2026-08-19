@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useMyBusiness } from "@/hooks/use-business";
+import { useBusinessContext } from "@/hooks/use-business";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, parseMoneyToMinor, uniqueSlug } from "@/lib/format";
@@ -52,8 +52,9 @@ const emptyDraft = {
 function PropertiesDashboard() {
   const { session, loading } = useSession();
   const userId = session?.user.id;
-  const membership = useMyBusiness();
-  const businessId = membership.data?.business_id ?? null;
+  const { activeMembership, capabilities } = useBusinessContext();
+  const businessId = activeMembership?.business_id ?? null;
+  const canManage = capabilities.manageListings;
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState(emptyDraft);
 
@@ -185,85 +186,94 @@ function PropertiesDashboard() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-      <form
-        className="surface-card space-y-3 p-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          createListing.mutate();
-        }}
-      >
-        <h1 className="text-lg font-semibold">New listing draft</h1>
-        <Field
-          id="title"
-          label="Title"
-          value={draft.title}
-          onChange={(v) => setDraft({ ...draft, title: v })}
-        />
-        <Field
-          id="property_type"
-          label="Property type"
-          value={draft.property_type}
-          onChange={(v) => setDraft({ ...draft, property_type: v })}
-        />
-        <div className="grid grid-cols-2 gap-3">
+      {canManage ? (
+        <form
+          className="surface-card space-y-3 p-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            createListing.mutate();
+          }}
+        >
+          <h1 className="text-lg font-semibold">New listing draft</h1>
           <Field
-            id="address_city"
-            label="City"
-            value={draft.address_city}
-            onChange={(v) => setDraft({ ...draft, address_city: v })}
+            id="title"
+            label="Title"
+            value={draft.title}
+            onChange={(v) => setDraft({ ...draft, title: v })}
           />
           <Field
-            id="address_state"
-            label="State"
-            value={draft.address_state}
-            onChange={(v) => setDraft({ ...draft, address_state: v })}
+            id="property_type"
+            label="Property type"
+            value={draft.property_type}
+            onChange={(v) => setDraft({ ...draft, property_type: v })}
           />
-        </div>
-        <Field
-          id="price"
-          label="Price (USD)"
-          value={draft.price}
-          onChange={(v) => setDraft({ ...draft, price: v })}
-        />
-        <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              id="address_city"
+              label="City"
+              value={draft.address_city}
+              onChange={(v) => setDraft({ ...draft, address_city: v })}
+            />
+            <Field
+              id="address_state"
+              label="State"
+              value={draft.address_state}
+              onChange={(v) => setDraft({ ...draft, address_state: v })}
+            />
+          </div>
           <Field
-            id="bedrooms"
-            label="Beds"
-            value={draft.bedrooms}
-            onChange={(v) => setDraft({ ...draft, bedrooms: v })}
+            id="price"
+            label="Price (USD)"
+            value={draft.price}
+            onChange={(v) => setDraft({ ...draft, price: v })}
           />
+          <div className="grid grid-cols-3 gap-3">
+            <Field
+              id="bedrooms"
+              label="Beds"
+              value={draft.bedrooms}
+              onChange={(v) => setDraft({ ...draft, bedrooms: v })}
+            />
+            <Field
+              id="bathrooms"
+              label="Baths"
+              value={draft.bathrooms}
+              onChange={(v) => setDraft({ ...draft, bathrooms: v })}
+            />
+            <Field
+              id="area_sqft"
+              label="Sqft"
+              value={draft.area_sqft}
+              onChange={(v) => setDraft({ ...draft, area_sqft: v })}
+            />
+          </div>
           <Field
-            id="bathrooms"
-            label="Baths"
-            value={draft.bathrooms}
-            onChange={(v) => setDraft({ ...draft, bathrooms: v })}
+            id="cover_path"
+            label="Cover image URL"
+            value={draft.cover_path}
+            onChange={(v) => setDraft({ ...draft, cover_path: v })}
           />
-          <Field
-            id="area_sqft"
-            label="Sqft"
-            value={draft.area_sqft}
-            onChange={(v) => setDraft({ ...draft, area_sqft: v })}
-          />
-        </div>
-        <Field
-          id="cover_path"
-          label="Cover image URL"
-          value={draft.cover_path}
-          onChange={(v) => setDraft({ ...draft, cover_path: v })}
-        />
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            rows={4}
-            value={draft.description}
-            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-          />
-        </div>
-        <Button type="submit" disabled={createListing.isPending}>
-          {createListing.isPending ? "Saving…" : "Create draft"}
-        </Button>
-      </form>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              rows={4}
+              value={draft.description}
+              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            />
+          </div>
+          <Button type="submit" disabled={createListing.isPending}>
+            {createListing.isPending ? "Saving…" : "Create draft"}
+          </Button>
+        </form>
+      ) : (
+        <section className="surface-card p-6">
+          <h1 className="text-lg font-semibold">Read-only listing access</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your current business role can view listings but cannot create or change them.
+          </p>
+        </section>
+      )}
 
       <section className="surface-card p-6">
         <h2 className="text-lg font-semibold">Your listings</h2>
@@ -284,23 +294,25 @@ function PropertiesDashboard() {
                     {formatMoney(l.price_minor, l.currency)} · {l.address_city ?? "No city"} ·{" "}
                     {l.status.replace("_", " ")}
                   </p>
-                  <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-accent underline-offset-4 hover:underline">
-                    {l.cover_path ? "Replace cover photo" : "Upload cover photo"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      disabled={uploadCover.isPending}
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        if (file) uploadCover.mutate({ propertyId: l.id, file });
-                        event.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
+                  {canManage ? (
+                    <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-accent underline-offset-4 hover:underline">
+                      {l.cover_path ? "Replace cover photo" : "Upload cover photo"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        disabled={uploadCover.isPending}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) uploadCover.mutate({ propertyId: l.id, file });
+                          event.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  ) : null}
                 </div>
                 <div className="flex gap-2">
-                  {l.status === "draft" ? (
+                  {canManage && l.status === "draft" ? (
                     <Button
                       size="sm"
                       variant="secondary"
@@ -318,7 +330,7 @@ function PropertiesDashboard() {
                       View live
                     </Link>
                   ) : null}
-                  {l.status !== "archived" ? (
+                  {canManage && l.status !== "archived" ? (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -326,7 +338,7 @@ function PropertiesDashboard() {
                     >
                       Archive
                     </Button>
-                  ) : (
+                  ) : canManage ? (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -334,7 +346,7 @@ function PropertiesDashboard() {
                     >
                       Restore draft
                     </Button>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </li>
