@@ -1,9 +1,47 @@
 # Environment and Credential Handoff
 
-The application and credential-free tests can be built without these values. The remaining
-connected gates require an authorized operator to configure them in local `.env`, the
-hosting secret store, provider dashboards, and GitHub Actions as indicated. Do not send
-secret values in chat or commit them.
+The local development environment is connected to the hosted **Accountabul Development**
+Supabase project. The application and credential-free tests can still be built without
+credentials. Connected tests require the protected local environment file or equivalent
+values in the hosting/GitHub secret stores. Do not send secret values in chat or commit them.
+
+## Current local development environment
+
+- Supabase project: `Accountabul Development`
+- Project ref: `vvrudyzeublgunlfgvlt`
+- Organization: `JibreelMuhammad's Org`
+- Region: `us-east-2`
+- Local app URL: `http://127.0.0.1:4173/`
+- Protected environment file: `%LOCALAPPDATA%\Accountabul\dev.env`
+
+The environment file is intentionally outside OneDrive and the Git repository. Its Windows
+ACL grants access only to the signed-in user and `SYSTEM`. Never copy its service-role value
+into a `VITE_` variable, source file, test fixture, artifact, or chat message.
+
+From the repository root:
+
+```sh
+npm ci
+npm run dev:local
+```
+
+In a second terminal, run the connected and credential-free gates:
+
+```sh
+npm run test:connected
+npm run qa:smoke -- http://127.0.0.1:4173/
+npm run check
+```
+
+`npm run dev:local` and `npm run test:connected` inject the protected environment only into
+their child processes. The launcher refuses connected tests when the server-only credential
+is missing. The browser receives only the project identifier, URL, and publishable key.
+
+Email/password sign-up is enabled and currently requires email confirmation. Google OAuth
+is disabled until its Supabase and Google provider credentials and redirect origins are
+configured. The Auth admin API currently works with the project's legacy `service_role`
+credential; the opaque secret key should be re-tested before replacing it in the protected
+environment.
 
 ## Required to run the connected application
 
@@ -18,10 +56,9 @@ secret values in chat or commit them.
 | `SUPABASE_SERVICE_ROLE_KEY`         | Supabase secret/service-role key | Server runtime + GitHub Phase 1 gate only | Secret; bypasses RLS   |
 | `PUBLIC_SITE_URL`                   | Final preview/production origin  | Server runtime                            | Public origin          |
 
-The CLI is linked to project ref `zvfxmlvtbnesjyugodje`, but the current authenticated
-profile returned HTTP 403 during linked verification. Sign in with a Supabase account that
-can access that project (or relink the correct project), then run `supabase migration list
---linked` before applying anything.
+The CLI is linked to project ref `vvrudyzeublgunlfgvlt`. Before applying future migrations,
+run `supabase projects list` and `supabase migration list --linked`, then confirm the linked
+project name and ref match the environment above.
 
 In Supabase Auth, confirm the production Site URL and exact preview/production redirect
 allowlist. Enable/configure email delivery and Google OAuth only if those sign-in methods

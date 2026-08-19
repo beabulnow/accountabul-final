@@ -1,0 +1,134 @@
+{
+  "baseUrl": "http://127.0.0.1:4173",
+  "routeCount": 18,
+  "passed": 18,
+  "failed": 0,
+  "results": [
+    {
+      "route": "/",
+      "pass": true,
+      "status": 200,
+      "durationMs": 95,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/signup",
+      "pass": true,
+      "status": 200,
+      "durationMs": 523,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/login",
+      "pass": true,
+      "status": 200,
+      "durationMs": 186,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/live",
+      "pass": true,
+      "status": 200,
+      "durationMs": 125,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/live/qa-missing-event",
+      "pass": true,
+      "status": 200,
+      "durationMs": 351,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/marketplace",
+      "pass": true,
+      "status": 200,
+      "durationMs": 161,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/properties/qa-missing-property",
+      "pass": true,
+      "status": 200,
+      "durationMs": 156,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/businesses",
+      "pass": true,
+      "status": 200,
+      "durationMs": 69,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/businesses/qa-missing-business",
+      "pass": true,
+      "status": 200,
+      "durationMs": 153,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/saved",
+      "pass": true,
+      "status": 200,
+      "durationMs": 83,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard",
+      "pass": true,
+      "status": 200,
+      "durationMs": 71,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard/profile",
+      "pass": true,
+      "status": 200,
+      "durationMs": 83,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard/business",
+      "pass": true,
+      "status": 200,
+      "durationMs": 149,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard/properties",
+      "pass": true,
+      "status": 200,
+      "durationMs": 134,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard/services",
+      "pass": true,
+      "status": 200,
+      "durationMs": 99,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard/leads",
+      "pass": true,
+      "status": 200,
+      "durationMs": 104,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/dashboard/billing",
+      "pass": true,
+      "status": 200,
+      "durationMs": 66,
+      "detail": "HTML route shell rendered"
+    },
+    {
+      "route": "/admin",
+      "pass": true,
+      "status": 200,
+      "durationMs": 179,
+      "detail": "HTML route shell rendered"
+    }
+  ]
+}

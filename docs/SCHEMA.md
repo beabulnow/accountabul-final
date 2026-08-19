@@ -1,8 +1,10 @@
 # Canonical Schema — Accountabul Platform Production
 
-Originally authored as the Phase 0 schema plan. The connected Supabase backend now
-contains the Phase 1–5 foundation represented by the committed migrations. Live migration
-state must be verified with the Supabase CLI/MCP before each phase gate.
+Originally authored as the Phase 0 schema plan. The repository now contains the committed
+Phase 1-5 schema foundation. The configured Supabase project could not be read during the
+latest verification because the current CLI profile returned HTTP 403, so the live applied
+state remains unknown. Verify it with an authorized Supabase CLI/MCP session before each
+connected phase gate or remote schema change.
 
 ## Conventions (non-negotiable)
 
@@ -118,7 +120,10 @@ unique indexes on all slugs; `chat_messages (event_id, created_at)`;
 `tips (provider, provider_record_id)` unique; `payment_events (provider, provider_event_id)`
 unique. Verify with `EXPLAIN (ANALYZE, BUFFERS)` on representative data before launch.
 
-## Logical migration order
+## Logical schema groups
+
+These identifiers preserve the original design sequence. They are planning labels, not the
+names of the physical migration files.
 
 1. `0001_extensions_and_enums`
 2. `0002_profiles_and_user_roles` (+ `has_role` security-definer function)
@@ -132,9 +137,20 @@ unique. Verify with `EXPLAIN (ANALYZE, BUFFERS)` on representative data before l
 10. `0010_audit_log`
 11. `0011_migration_mapping_tables`
 
-Each migration is forward-only, contains its GRANTs and RLS policies inline, and is
-committed to source control. The logical groups were consolidated into timestamped
-Supabase migration files during implementation. Because the current CLI profile cannot
-read the linked project (HTTP 403), the live applied list must be verified by an authorized
-operator before any further remote change; repository presence alone is not execution
-evidence.
+The logical groups were consolidated into these nine timestamped Supabase migrations:
+
+| Committed migration                                       | Responsibility                                                                   |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `20260808085710_b0401a1b-a290-407c-b3d5-fdcc05e0f8a1.sql` | Identity, roles, businesses, membership, and credentials                         |
+| `20260808085753_bf5c208e-bab2-43ec-a2ff-c5f58b1affb2.sql` | Helper-function execution grants                                                 |
+| `20260808090750_64733fdb-925f-455e-9b95-382cfd446dbd.sql` | Marketplace, services, events, chat, tips, audit, and migration tables           |
+| `20260808090823_c70b1fad-4979-4347-8df2-0d358e17d7e9.sql` | Chat-ban enforcement                                                             |
+| `20260808114821_harden_phase_1_to_3_gates.sql`            | Phase 1-3 public projections, lifecycle rules, RPCs, and authorization hardening |
+| `20260808115351_server_chat_gateway.sql`                  | Server-mediated chat and atomic rate limiting                                    |
+| `20260808120229_property_media_storage.sql`               | Private property-media bucket and object policies                                |
+| `20260810171057_harden_private_rls_helpers.sql`           | Private helper isolation, security-invoker projections, and explicit privileges  |
+| `20260811065051_optimize_rls_and_fk_indexes.sql`          | RLS plan optimization and foreign-key/query-supporting indexes                    |
+
+The files are forward-only and committed to source control. The latest local migration
+check verifies repository structure; it does not prove remote execution. An authorized
+operator must verify the live applied list before any further remote change.

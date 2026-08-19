@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "dev:local": "node scripts/run-with-local-env.mjs -- npm run dev -- --host 127.0.0.1 --port 4173",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "check": "npm run check:migrations && npm run qa:static && npm run typecheck && npm run lint && npm test && npm run build",
@@ -19,6 +20,7 @@
     "test:phase1": "node --env-file-if-exists=.env --experimental-strip-types --test tests/phase1-rls.integration.test.ts tests/phase-gates.integration.test.ts",
     "test:phase2": "node --env-file-if-exists=.env --experimental-strip-types --test tests/storage-rls.integration.test.ts",
     "test:phase3": "node --env-file-if-exists=.env --experimental-strip-types --test tests/chat-rls.integration.test.ts",
+    "test:connected": "node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase1 && node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase2 && node scripts/run-with-local-env.mjs --require-service-role -- npm run test:phase3",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

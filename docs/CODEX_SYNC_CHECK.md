@@ -7,6 +7,18 @@ This file verifies that Codex can commit to the dedicated Accountabul production
 - Branch: `main`
 - Scope: new Accountabul production platform only
 
-As of 2026-08-08, GitHub `main` and the merged `codex/initial-qa-fixes` branch point to
-the same commit. New phase work must start from a refreshed `origin/main` and use a new
-`codex/*` branch. See `docs/PHASE_STATUS.md` for the current branch baseline.
+The original Codex-to-GitHub-to-Lovable sync was verified through the merged
+`codex/initial-qa-fixes` work. At the 2026-08-08 milestone audit, local `main` contained
+additional phase-gate, QA, importer, and documentation commits that were not yet present on
+`origin/main`. Consequently, GitHub and Lovable should be treated as behind the current local
+implementation until a normal push succeeds and Lovable shows the new commit.
+
+Before publishing:
+
+1. Run `git status -sb` and review the local commits and working-tree diff.
+2. Run `npm run check`.
+3. Commit the intended cleanup without amending or rebasing published commits.
+4. Push `main` normally; never force push.
+5. Confirm the GitHub workflow passes and Lovable ingests the pushed commit.
+
+See `docs/PHASE_STATUS.md` for the product milestone and remaining launch gates.

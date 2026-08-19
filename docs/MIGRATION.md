@@ -2,11 +2,15 @@
 
 ## Current status
 
-The Supabase backend is connected and the committed schema covers the Phase 1–5
-foundation. No destructive migration is authorized by this document. Before adding a
-migration, verify the live migration list, create the file through the current Supabase
-CLI, apply it to a non-production environment first, and record the verification in the
-phase ledger.
+The repository contains nine committed migration files covering the Phase 1-5 schema
+foundation and later authorization/storage hardening. The Supabase CLI is configured with a
+project reference, but the latest linked verification returned HTTP 403. Therefore, the live
+applied migration state is **unknown** and must not be inferred from repository files.
+
+No destructive migration is authorized by this document. Before adding a migration, an
+authorized operator must verify the linked project and live migration list, create the file
+through the current Supabase CLI, apply it to a non-production environment first, and record
+the verification in the phase ledger.
 
 ## Schema migration rules
 

@@ -18,7 +18,8 @@ command exit code, and output location. Never paste secret values into the recor
 
 1. Confirm `git status --short --branch`, the intended commit, and the Supabase project ref
    in `supabase/config.toml` and the Dashboard. Stop if any identifier disagrees.
-2. Run `npm ci`, `npm run check`, and `supabase migration list --linked`. Save the output.
+2. Run `npm ci`, `npm run check`, `npm run test:connected`, and
+   `supabase migration list --linked`. Save the output.
 3. Confirm an approved maintenance window, freeze owner, rollback owner, and notification
    channel.
 4. Confirm the legacy export is immutable and record its SHA-256 checksum.

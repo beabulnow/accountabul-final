@@ -1,7 +1,10 @@
 # Auth / RLS Threat Model — Accountabul Platform Production
 
-Reviewed at the Phase 0 gate. No product feature work proceeds until authentication
-boundaries, business ownership, and environment secrets are demonstrably correct.
+The design was reviewed at the Phase 0 gate. Its repository controls are implemented and
+covered by static/unit tests, but the connected two-user/two-business and role-based RLS gates
+remain launch blockers. No production launch proceeds until authentication boundaries,
+business ownership, grants, and environment secrets are demonstrated against the connected
+Supabase project.
 
 ## Principals
 

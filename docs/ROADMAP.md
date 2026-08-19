@@ -2,11 +2,18 @@
 
 Each phase ends deployable. No phase silently broadens the MVP.
 
-Current milestone: **Phase 6 connected launch-gate closure**. Credential-free implementation
-through Phase 6 is complete, including the signed-out Chromium viewport matrix. Authenticated
-role, provider, deployed cross-browser, screen-reader, and monitoring evidence remains before
-the connected launch gate can be marked complete. See `docs/PHASE_STATUS.md` for the
-evidence-based status ledger.
+Current milestone: **Phase 6 connected launch-gate closure plus targeted
+definition-of-done cleanup**. Core product workflows through Phase 5 and the signed-out
+Chromium viewport matrix are implemented. Live-room presence wiring, member notification
+preferences, and per-feature analytics/audit coverage still require an implementation or
+explicit scope decision. Authenticated role, provider, deployed cross-browser, screen-reader,
+and monitoring evidence also remains before the launch gate can be marked complete. See
+`docs/PHASE_STATUS.md` for the evidence-based status ledger.
+
+The `0001`-`0011` labels below describe the original logical schema groups, not physical
+filenames. Implementation consolidated those groups into nine timestamped Supabase migration
+files. `docs/SCHEMA.md` maps the logical plan to the committed files. A committed migration is
+not evidence that it has been applied to the connected project.
 
 ## Phase 0 — Foundation and threat model
 
@@ -20,7 +27,8 @@ Delivered:
 - [x] Auth/RLS threat model — `docs/RLS_THREAT_MODEL.md`.
 - [x] Secret rotation checklist — inside `docs/RLS_THREAT_MODEL.md`.
 - [x] Reuse ledger — `REUSE_LEDGER.md`.
-- [x] Migration policy — `docs/MIGRATION.md` (no migrations run).
+- [x] Migration policy — `docs/MIGRATION.md` (authored during Phase 0 before later-phase
+      migrations were committed).
 - [x] CI for types, lint, unit tests, build, migration checks, and secret scanning —
       `.github/workflows/ci.yml`.
 
@@ -29,7 +37,7 @@ ownership, and environment secrets are demonstrably correct.
 
 ## Phase 1 — Accounts and business pages
 
-Backend enabled; migrations `0001`–`0004`. Member signup/login/recovery, member profile,
+Logical schema groups `0001`-`0004`. Member signup/login/recovery, member profile,
 business creation and staff membership, public business directory and detail, verification
 submission and admin review.
 
@@ -38,7 +46,7 @@ public pages expose only approved columns.
 
 ## Phase 2 — Marketplace and services
 
-Migrations `0005`–`0007`. Property drafts, media, submission, review, publication, browse
+Logical schema groups `0005`-`0007`. Property drafts, media, submission, review, publication, browse
 /search/filter, detail, save, inquiry; business services and service inquiries; lead
 dashboard.
 
@@ -47,7 +55,7 @@ intentional fallbacks; search never returns drafts or suspended data.
 
 ## Phase 3 — Live conference room and unified chat
 
-Migration `0008`. Scheduled/current/replay routes, Restream player and status adapter,
+Logical schema group `0008`. Scheduled/current/replay routes, provider-neutral player states,
 unified chat gateway with normalized UI, server-side rate limits and moderation, reminders
 and presence.
 
@@ -56,7 +64,7 @@ stay server-side; a banned user cannot bypass moderation with a forged client ro
 
 ## Phase 4 — Tips and payment reconciliation
 
-Migration `0009`. Tip UI and amount validation, provider checkout adapter (Stripe first),
+Logical schema group `0009`. Tip UI and amount validation, provider checkout adapter (Stripe first),
 signed webhook reconciliation, receipts, tip chat event, failure and refund handling, admin
 reconciliation view.
 
@@ -65,7 +73,7 @@ mark a tip paid; amounts reconcile to the provider.
 
 ## Phase 5 — Migration and operations
 
-Migrations `0010`–`0011`. Idempotent importers and mapping tables, dry-run and
+Logical schema groups `0010`-`0011`. Idempotent importers and mapping tables, dry-run and
 reconciliation report, admin queues and audit history, backup/rollback/incident/cutover
 runbooks.
 
