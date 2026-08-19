@@ -2,10 +2,10 @@
 
 Originally authored as the Phase 0 schema plan. The repository now contains the committed
 Phase 1-5 schema foundation plus the testnet FXRP acceptance and batching contracts. On
-2026-08-19, the authorized CLI read Supabase project `vvrudyzeublgunlfgvlt` and reconciled all
-22 applied migration records into the repository. Three reviewed forward migrations remain local
-and unapplied: cleanup of an unintended probe function, secure business member invitations, and
-aggregate event presence hardening.
+2026-08-19, the authorized CLI reconciled Supabase project `vvrudyzeublgunlfgvlt` and applied all
+25 repository migrations normally. Remote and local migration history now match, including cleanup
+of an unintended probe function, secure business member invitations, and aggregate event presence
+hardening.
 
 ## Conventions (non-negotiable)
 
@@ -72,9 +72,9 @@ migration_batches ──< migration_record_map
   `created_by`, timestamps, `published_at`.
 - **`business_members`** — `id`, `business_id`, `user_id`, `membership_role`
   (`owner|manager|listing_manager|lead_manager|viewer`), `permissions`,
-  `invitation_status`, `invited_by`, `joined_at`, timestamps. The pending forward contract removes
-  direct authenticated writes; owner invitation, role change, and revocation plus invited-member
-  acceptance/decline cross narrow audited RPCs.
+  `invitation_status`, `invited_by`, `joined_at`, timestamps. Direct authenticated writes are
+  removed; owner invitation, role change, and revocation plus invited-member acceptance/decline
+  cross narrow audited RPCs.
 - **`business_credentials`** — private verification artifacts plus a
   `public_display_approved` flag. Documents and private notes are never client-readable.
 

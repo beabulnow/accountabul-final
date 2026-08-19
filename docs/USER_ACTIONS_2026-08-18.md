@@ -22,11 +22,11 @@ source files, screenshots, or this document.
       billing all change together.
 - [ ] With a `viewer` membership, confirm business, listing, service, and lead write controls are
       absent while read access remains available.
-- [ ] Approve applying the three reviewed forward migrations to Supabase project
+- [x] Approved and applied the three reviewed forward migrations to Supabase project
       `vvrudyzeublgunlfgvlt`: legacy probe-function cleanup, business member invitation RPCs, and
-      aggregate event presence hardening. Before application, rerun the CLI dry run to confirm they
-      are still the only pending remote migrations. Then run the connected invitation, role/RLS,
-      chat, and presence lifecycle tests before deploying the matching UI.
+      aggregate event presence hardening. Remote history now matches all 25 local migrations. The
+      connected invitation, account/role RLS, Storage, chat, and presence suites passed with six
+      tests run and zero skips.
 
 The older property-platform access items below are historical source-reconciliation notes and are
 not blockers for work in the final repository.
