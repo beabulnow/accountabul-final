@@ -321,6 +321,10 @@ and inconsistent responsive visibility are not part of the final contract.
 
 ## 13. Core acceptance criteria
 
+The executable completion contract and required evidence are maintained in
+[`docs/PRODUCTION_CORE_DEFINITION_OF_DONE.md`](PRODUCTION_CORE_DEFINITION_OF_DONE.md). The
+summary below does not replace any required gate in that document.
+
 - Source control has one reconciled primary branch and no lost Lovable-only edits.
 - Clean checkout can install, type-check, lint, test, and build deterministically.
 - Personal, business membership, and admin authorization are server-enforced.
