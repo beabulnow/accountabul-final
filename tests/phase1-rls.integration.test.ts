@@ -4,6 +4,8 @@ import test from "node:test";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+import { createSupabaseFetch } from "../src/integrations/supabase/fetch.ts";
+
 const url = process.env["SUPABASE_URL"];
 const publishableKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
 const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
@@ -20,6 +22,7 @@ if (required && missing.length > 0) {
 
 function client(key: string) {
   return createClient(url!, key, {
+    global: { fetch: createSupabaseFetch(key) },
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
@@ -74,34 +77,21 @@ test(
     assert.ifError(otherProfile.error);
     assert.equal(otherProfile.data?.length, 0);
 
-    async function createBusiness(owner: SupabaseClient, userId: string, label: string) {
+    async function createBusiness(owner: SupabaseClient, label: string) {
       const slug = `phase1-${label}-${randomBytes(5).toString("hex")}`;
-      const inserted = await owner
-        .from("businesses")
-        .insert({
-          slug,
-          legal_name: `Private ${label} LLC`,
-          display_name: `Phase 1 ${label}`,
-          created_by: userId,
-        })
-        .select("id")
-        .single();
-      assert.ifError(inserted.error);
-      businesses.push(inserted.data!.id);
-
-      const membership = await owner.from("business_members").insert({
-        business_id: inserted.data!.id,
-        user_id: userId,
-        membership_role: "owner",
-        invitation_status: "active",
-        joined_at: new Date().toISOString(),
+      const created = await owner.rpc("create_business_with_owner", {
+        _slug: slug,
+        _legal_name: `Private ${label} LLC`,
+        _display_name: `Phase 1 ${label}`,
       });
-      assert.ifError(membership.error);
-      return inserted.data!.id;
+      assert.ifError(created.error);
+      assert.equal(typeof created.data, "string");
+      businesses.push(created.data as string);
+      return created.data as string;
     }
 
-    const businessA = await createBusiness(userAClient, userA.id, "alpha");
-    const businessB = await createBusiness(userBClient, userB.id, "bravo");
+    const businessA = await createBusiness(userAClient, "alpha");
+    const businessB = await createBusiness(userBClient, "bravo");
 
     const ownDraft = await userAClient.from("businesses").select("id").eq("id", businessA);
     assert.ifError(ownDraft.error);

@@ -4,6 +4,8 @@ import test from "node:test";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+import { createSupabaseFetch } from "../src/integrations/supabase/fetch.ts";
+
 const url = process.env["SUPABASE_URL"];
 const publishableKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
 const serviceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
@@ -19,7 +21,10 @@ if (required && missing.length > 0) {
 }
 
 function client(key: string) {
-  return createClient(url!, key, { auth: { autoRefreshToken: false, persistSession: false } });
+  return createClient(url!, key, {
+    global: { fetch: createSupabaseFetch(key) },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 }
 
 async function createTestUser(admin: SupabaseClient, label: string, password: string) {
