@@ -158,6 +158,9 @@ captures. A placeholder iframe is not sufficient for this gate.
 
 ### G7 — Database, storage, and integration security pass
 
+- [ ] Every release-blocking finding in
+  [`docs/PRIMARY_BASE_STATIC_AUDIT_2026-08-19.md`](PRIMARY_BASE_STATIC_AUDIT_2026-08-19.md)
+  is fixed and closed with targeted connected evidence.
 - [ ] Every exposed table/view has intentional privileges and RLS behavior.
 - [ ] Public projections exclude private email, phone, billing, identity, moderation, and
   internal workflow fields.

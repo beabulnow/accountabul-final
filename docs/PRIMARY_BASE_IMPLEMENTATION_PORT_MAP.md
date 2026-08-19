@@ -37,6 +37,20 @@ be adapted, and where the production source of truth must live after reconciliat
 
 ## Source-of-truth decisions
 
+### Static schema snapshot
+
+The generated target types at the inspected commit expose 61 tables/views/functions. Relevant
+tables include `profiles`, `vendor_profiles`, `vendor_credentials`, `vendor_products`,
+`vendor_leads`, `professionals`, `service_bookings`, `properties`, `saved_properties`, and
+`user_roles`; there is no generated canonical `businesses` or business-membership table.
+`properties` currently carries `owner_user_id`, `owner_wallet`, and `vendor_profile_id`.
+`app_role` is `admin | moderator | user | compliance_officer`.
+
+The checked-in migration chain already contains later hardening for vendor verification and
+saved-user ownership, but the static audit found release-blocking projection/RPC and anonymous
+lead issues. See
+[`docs/PRIMARY_BASE_STATIC_AUDIT_2026-08-19.md`](PRIMARY_BASE_STATIC_AUDIT_2026-08-19.md).
+
 | Concept | Production authority | Compatibility treatment |
 | --- | --- | --- |
 | Authenticated person | `auth.users` plus private `profiles` row | `profiles.account_type` may be a display/onboarding preference only |
