@@ -25,6 +25,10 @@ jobs:
   secret-scan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GIT_CONFIG_COUNT: 1
+      GIT_CONFIG_KEY_0: safe.directory
+      GIT_CONFIG_VALUE_0: /github/workspace
     steps:
       - uses: actions/checkout@v4
         with:
