@@ -202,7 +202,7 @@
     {
       "name": "a11y:button-type",
       "pass": true,
-      "detail": "6 raw button tag(s) inspected"
+      "detail": "7 raw button tag(s) inspected"
     },
     {
       "name": "a11y:iframe-title",

@@ -90,6 +90,23 @@ function BusinessPage() {
         address_state: business.address_state ?? "",
         address_country: business.address_country ?? "",
       });
+      return;
+    }
+
+    // Prefill from the business name captured during signup, if any.
+    let pending = "";
+    try {
+      pending = window.sessionStorage.getItem("accountabul:business_name") ?? "";
+      if (pending) window.sessionStorage.removeItem("accountabul:business_name");
+    } catch {
+      pending = "";
+    }
+    if (pending) {
+      setForm((prev) =>
+        prev.legal_name || prev.display_name
+          ? prev
+          : { ...prev, legal_name: pending, display_name: pending },
+      );
     }
   }, [business]);
 

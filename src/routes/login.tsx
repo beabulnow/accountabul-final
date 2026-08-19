@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { GoogleIcon } from "@/components/google-icon";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -215,7 +216,8 @@ function LoginPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={busy}>
+        <Button variant="outline" className="w-full gap-2" onClick={handleGoogle} disabled={busy}>
+          <GoogleIcon />
           Continue with Google
         </Button>
 
